@@ -23,27 +23,30 @@
             margin-bottom: 50px;
         }
 
-        button {
+        a {
             background-color: #04001d;
             color: white;
             font-size: 1.5em;
             padding: 15px 30px;
             border: none;
             border-radius: 10px;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.3s;
             text-transform: uppercase;
             text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            margin-top: 20px; /* Ajoute de l'espace entre les boutons */
         }
 
-        button:hover {
+        a:hover {
             background-color: #292961;
             transform: scale(1.1);
         }
     </style>
 </head>
 <body>
-    <h1>Animés</h1>
-    <button onclick="window.location.href='tower_of_god.html'">Tower of God</button>
+    <h1>Saison 1</h1>
+    <a href="ep7tog.mp4" download>épisode 7</a>
+    <a href="ep8tog.mp4" download>épisode 8</a> <!-- Deuxième bouton -->
 </body>
 </html>
