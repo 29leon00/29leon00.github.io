@@ -6,8 +6,10 @@ const imageUpload = document.getElementById('imageUpload');
 const capturedImage = document.getElementById('capturedImage');
 const captureButton = document.getElementById('captureButton');
 const uploadedImage = document.getElementById('uploadedImage');
+const objectToDetect = document.getElementById('objectToDetect');
 
 let currentStream;
+let objectToDetectValue = 'car'; // Valeur par défaut
 
 // Fonction pour accéder à la caméra sélectionnée
 function startCamera(deviceId) {
@@ -63,7 +65,7 @@ imageUpload.addEventListener('change', event => {
             video.style.display = 'none';
             capturedImage.style.display = 'none';
             uploadedImage.style.display = 'block';
-            detectCarOnImage(uploadedImage);
+            detectObjectOnImage(uploadedImage);
         };
         reader.readAsDataURL(file);
     }
@@ -82,49 +84,55 @@ captureButton.addEventListener('click', () => {
     capturedImage.style.display = 'block';
     uploadedImage.style.display = 'none';
 
-    detectCarOnImage(capturedImage);
+    detectObjectOnImage(capturedImage);
+});
+
+// Mettre à jour l'objet à détecter lorsque l'utilisateur le change
+objectToDetect.addEventListener('input', () => {
+    objectToDetectValue = objectToDetect.value.toLowerCase(); // Met à jour la valeur avec l'entrée utilisateur
+    document.getElementById('status').textContent = `Recherche de ${objectToDetectValue}...`;
 });
 
 // Charger le modèle COCO-SSD
 let model;
 cocoSsd.load().then(loadedModel => {
     model = loadedModel;
-    document.getElementById('status').textContent = "Modèle chargé, recherche de voiture...";
-    detectCarOnVideo();
+    document.getElementById('status').textContent = `Modèle chargé, recherche de ${objectToDetectValue}...`;
+    detectObjectOnVideo();
 });
 
-// Fonction de détection de voiture sur la vidéo
-function detectCarOnVideo() {
+// Fonction de détection d'objet sur la vidéo
+function detectObjectOnVideo() {
     model.detect(video).then(predictions => {
-        let foundCar = false;
+        let foundObject = false;
         predictions.forEach(prediction => {
-            if (prediction.class === 'car') {
-                foundCar = true;
-                document.getElementById('status').textContent = "Voiture détectée 🚗 !";
+            if (prediction.class === objectToDetectValue) {
+                foundObject = true;
+                document.getElementById('status').textContent = `${objectToDetectValue.charAt(0).toUpperCase() + objectToDetectValue.slice(1)} détecté !`;
                 document.body.style.backgroundColor = "#ff7043"; // Signal visuel
             }
         });
-        if (!foundCar) {
-            document.getElementById('status').textContent = "Pas de voiture détectée.";
+        if (!foundObject) {
+            document.getElementById('status').textContent = `Pas de ${objectToDetectValue} détecté.`;
             document.body.style.backgroundColor = "#e0f7fa"; // Couleur de fond par défaut
         }
-        requestAnimationFrame(detectCarOnVideo);
+        requestAnimationFrame(detectObjectOnVideo);
     });
 }
 
-// Fonction de détection de voiture sur l'image importée ou capturée
-function detectCarOnImage(image) {
+// Fonction de détection d'objet sur l'image importée ou capturée
+function detectObjectOnImage(image) {
     model.detect(image).then(predictions => {
-        let foundCar = false;
+        let foundObject = false;
         predictions.forEach(prediction => {
-            if (prediction.class === 'car') {
-                foundCar = true;
-                document.getElementById('status').textContent = "Voiture détectée 🚗 sur l'image !";
+            if (prediction.class === objectToDetectValue) {
+                foundObject = true;
+                document.getElementById('status').textContent = `${objectToDetectValue.charAt(0).toUpperCase() + objectToDetectValue.slice(1)} détecté sur l'image !`;
                 document.body.style.backgroundColor = "#ff7043"; // Signal visuel
             }
         });
-        if (!foundCar) {
-            document.getElementById('status').textContent = "Pas de voiture détectée sur l'image.";
+        if (!foundObject) {
+            document.getElementById('status').textContent = `Pas de ${objectToDetectValue} détecté sur l'image.`;
             document.body.style.backgroundColor = "#e0f7fa"; // Couleur de fond par défaut
         }
     });
