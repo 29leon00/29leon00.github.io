@@ -6,11 +6,8 @@ const imageUpload = document.getElementById('imageUpload');
 const capturedImage = document.getElementById('capturedImage');
 const captureButton = document.getElementById('captureButton');
 const uploadedImage = document.getElementById('uploadedImage');
-const objectToDetect = document.getElementById('objectToDetect');
-const detectButton = document.getElementById('detectButton'); // Bouton détecter
 
 let currentStream;
-let objectToDetectValue = 'car'; // Valeur par défaut
 
 // Fonction pour accéder à la caméra sélectionnée
 function startCamera(deviceId) {
@@ -66,7 +63,7 @@ imageUpload.addEventListener('change', event => {
             video.style.display = 'none';
             capturedImage.style.display = 'none';
             uploadedImage.style.display = 'block';
-            detectObjectOnImage(uploadedImage);
+            detectCatOnImage(uploadedImage);
         };
         reader.readAsDataURL(file);
     }
@@ -85,60 +82,50 @@ captureButton.addEventListener('click', () => {
     capturedImage.style.display = 'block';
     uploadedImage.style.display = 'none';
 
-    detectObjectOnImage(capturedImage);
-});
-
-// Mettre à jour l'objet à détecter lorsque l'utilisateur le change
-objectToDetect.addEventListener('input', () => {
-    objectToDetectValue = objectToDetect.value.toLowerCase(); // Met à jour la valeur avec l'entrée utilisateur
-    document.getElementById('status').textContent = `Recherche de ${objectToDetectValue}...`;
-});
-
-// Ajouter l'événement click au bouton "Détecter"
-detectButton.addEventListener('click', () => {
-    if (video.style.display === 'block') {
-        detectObjectOnVideo();
-    } else if (capturedImage.style.display === 'block' || uploadedImage.style.display === 'block') {
-        detectObjectOnImage(capturedImage.style.display === 'block' ? capturedImage : uploadedImage);
-    }
+    detectCatOnImage(capturedImage);
 });
 
 // Charger le modèle COCO-SSD
 let model;
 cocoSsd.load().then(loadedModel => {
     model = loadedModel;
-    document.getElementById('status').textContent = `Modèle chargé, prêt à détecter.`;
+    document.getElementById('status').textContent = "Modèle chargé, recherche de chat...";
+    detectCatOnVideo();
 });
 
-// Fonction de détection d'objet sur la vidéo
-function detectObjectOnVideo() {
+// Fonction de détection de chat sur la vidéo
+function detectCatOnVideo() {
     model.detect(video).then(predictions => {
-        let foundObject = false;
+        let foundCat = false;
         predictions.forEach(prediction => {
-            if (prediction.class === objectToDetectValue) {
-                foundObject = true;
-                document.getElementById('status').textContent = `${objectToDetectValue.charAt(0).toUpperCase() + objectToDetectValue.slice(1)} détecté !`;
+            if (prediction.class === 'cat') {
+                foundCat = true;
+                document.getElementById('status').textContent = "Chat détecté 🐱 !";
                 document.body.style.backgroundColor = "#ff7043"; // Signal visuel
             }
         });
-        if (!foundObject) {
-            document.getElementById('status').textContent = `Pas de ${objectToDetectValue} détecté.`;
+        if (!foundCat) {
+            document.getElementById('status').textContent = "Pas de chat détecté.";
+            document.body.style.backgroundColor = "#e0f7fa"; // Couleur de fond par défaut
+        }
+        requestAnimationFrame(detectCatOnVideo);
+    });
+}
+
+// Fonction de détection de chat sur l'image importée ou capturée
+function detectCatOnImage(image) {
+    model.detect(image).then(predictions => {
+        let foundCat = false;
+        predictions.forEach(prediction => {
+            if (prediction.class === 'cat') {
+                foundCat = true;
+                document.getElementById('status').textContent = "Chat détecté 🐱 sur l'image !";
+                document.body.style.backgroundColor = "#ff7043"; // Signal visuel
+            }
+        });
+        if (!foundCat) {
+            document.getElementById('status').textContent = "Pas de chat détecté sur l'image.";
             document.body.style.backgroundColor = "#e0f7fa"; // Couleur de fond par défaut
         }
     });
 }
-
-// Fonction de détection d'objet sur l'image importée ou capturée
-function detectObjectOnImage(image) {
-    model.detect(image).then(predictions => {
-        let foundObject = false;
-        predictions.forEach(prediction => {
-            if (prediction.class === objectToDetectValue) {
-                foundObject = true;
-                document.getElementById('status').textContent = `${objectToDetectValue.charAt(0).toUpperCase() + objectToDetectValue.slice(1)} détecté sur l'image !`;
-                document.body.style.backgroundColor = "#ff7043"; // Signal visuel
-            }
-        });
-        if (!foundObject) {
-            document.getElementById('status').textContent = `Pas de ${objectToDetectValue} détecté sur l'image
-            
