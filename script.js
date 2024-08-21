@@ -3,6 +3,8 @@
 const video = document.getElementById('video');
 const cameraSelect = document.getElementById('cameraSelect');
 const imageUpload = document.getElementById('imageUpload');
+const capturedImage = document.getElementById('capturedImage');
+const captureButton = document.getElementById('captureButton');
 const uploadedImage = document.getElementById('uploadedImage');
 
 let currentStream;
@@ -23,6 +25,7 @@ function startCamera(deviceId) {
         currentStream = stream;
         video.srcObject = stream;
         video.style.display = 'block';
+        capturedImage.style.display = 'none';
         uploadedImage.style.display = 'none';
     }).catch(err => {
         console.error("Erreur d'accès à la caméra:", err);
@@ -58,11 +61,28 @@ imageUpload.addEventListener('change', event => {
         reader.onload = e => {
             uploadedImage.src = e.target.result;
             video.style.display = 'none';
+            capturedImage.style.display = 'none';
             uploadedImage.style.display = 'block';
             detectCatOnImage(uploadedImage);
         };
         reader.readAsDataURL(file);
     }
+});
+
+// Capturer une image à partir du flux vidéo
+captureButton.addEventListener('click', () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext('2d');
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    capturedImage.src = canvas.toDataURL('image/png');
+    video.style.display = 'none';
+    capturedImage.style.display = 'block';
+    uploadedImage.style.display = 'none';
+
+    detectCatOnImage(capturedImage);
 });
 
 // Charger le modèle COCO-SSD
@@ -92,7 +112,7 @@ function detectCatOnVideo() {
     });
 }
 
-// Fonction de détection de chat sur l'image importée
+// Fonction de détection de chat sur l'image importée ou capturée
 function detectCatOnImage(image) {
     model.detect(image).then(predictions => {
         let foundCat = false;
