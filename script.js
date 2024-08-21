@@ -59,7 +59,7 @@ imageUpload.addEventListener('change', event => {
             uploadedImage.src = e.target.result;
             video.style.display = 'none';
             uploadedImage.style.display = 'block';
-            detectOctopusOnImage(uploadedImage);
+            detectCatOnImage(uploadedImage);
         };
         reader.readAsDataURL(file);
     }
@@ -69,25 +69,43 @@ imageUpload.addEventListener('change', event => {
 let model;
 cocoSsd.load().then(loadedModel => {
     model = loadedModel;
-    document.getElementById('status').textContent = "Modèle chargé, recherche de poulpe...";
-    detectOctopusOnVideo();
+    document.getElementById('status').textContent = "Modèle chargé, recherche de chat...";
+    detectCatOnVideo();
 });
 
-// Fonction de détection de poulpe sur la vidéo
-function detectOctopusOnVideo() {
+// Fonction de détection de chat sur la vidéo
+function detectCatOnVideo() {
     model.detect(video).then(predictions => {
-        let foundOctopus = false;
+        let foundCat = false;
         predictions.forEach(prediction => {
-            if (prediction.class === 'octopus') {
-                foundOctopus = true;
-                document.getElementById('status').textContent = "Poulpe détecté 🐙 !";
+            if (prediction.class === 'cat') {
+                foundCat = true;
+                document.getElementById('status').textContent = "Chat détecté 🐱 !";
                 document.body.style.backgroundColor = "#ff7043"; // Signal visuel
             }
         });
-        if (!foundOctopus) {
-            document.getElementById('status').textContent = "Pas de poulpe détecté.";
+        if (!foundCat) {
+            document.getElementById('status').textContent = "Pas de chat détecté.";
             document.body.style.backgroundColor = "#e0f7fa"; // Couleur de fond par défaut
         }
-        requestAnimationFrame(detectOctopusOnVideo);
+        requestAnimationFrame(detectCatOnVideo);
+    });
+}
+
+// Fonction de détection de chat sur l'image importée
+function detectCatOnImage(image) {
+    model.detect(image).then(predictions => {
+        let foundCat = false;
+        predictions.forEach(prediction => {
+            if (prediction.class === 'cat') {
+                foundCat = true;
+                document.getElementById('status').textContent = "Chat détecté 🐱 sur l'image !";
+                document.body.style.backgroundColor = "#ff7043"; // Signal visuel
+            }
+        });
+        if (!foundCat) {
+            document.getElementById('status').textContent = "Pas de chat détecté sur l'image.";
+            document.body.style.backgroundColor = "#e0f7fa"; // Couleur de fond par défaut
+        }
     });
 }
