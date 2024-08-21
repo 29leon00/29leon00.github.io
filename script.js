@@ -63,7 +63,7 @@ imageUpload.addEventListener('change', event => {
             video.style.display = 'none';
             capturedImage.style.display = 'none';
             uploadedImage.style.display = 'block';
-            detectCatOnImage(uploadedImage);
+            detectCarOnImage(uploadedImage);
         };
         reader.readAsDataURL(file);
     }
@@ -82,49 +82,49 @@ captureButton.addEventListener('click', () => {
     capturedImage.style.display = 'block';
     uploadedImage.style.display = 'none';
 
-    detectCatOnImage(capturedImage);
+    detectCarOnImage(capturedImage);
 });
 
 // Charger le modèle COCO-SSD
 let model;
 cocoSsd.load().then(loadedModel => {
     model = loadedModel;
-    document.getElementById('status').textContent = "Modèle chargé, recherche de chat...";
-    detectCatOnVideo();
+    document.getElementById('status').textContent = "Modèle chargé, recherche de voiture...";
+    detectCarOnVideo();
 });
 
-// Fonction de détection de chat sur la vidéo
-function detectCatOnVideo() {
+// Fonction de détection de voiture sur la vidéo
+function detectCarOnVideo() {
     model.detect(video).then(predictions => {
-        let foundCat = false;
+        let foundCar = false;
         predictions.forEach(prediction => {
-            if (prediction.class === 'cat') {
-                foundCat = true;
-                document.getElementById('status').textContent = "Chat détecté 🐱 !";
+            if (prediction.class === 'car') {
+                foundCar = true;
+                document.getElementById('status').textContent = "Voiture détectée 🚗 !";
                 document.body.style.backgroundColor = "#ff7043"; // Signal visuel
             }
         });
-        if (!foundCat) {
-            document.getElementById('status').textContent = "Pas de chat détecté.";
+        if (!foundCar) {
+            document.getElementById('status').textContent = "Pas de voiture détectée.";
             document.body.style.backgroundColor = "#e0f7fa"; // Couleur de fond par défaut
         }
-        requestAnimationFrame(detectCatOnVideo);
+        requestAnimationFrame(detectCarOnVideo);
     });
 }
 
-// Fonction de détection de chat sur l'image importée ou capturée
-function detectCatOnImage(image) {
+// Fonction de détection de voiture sur l'image importée ou capturée
+function detectCarOnImage(image) {
     model.detect(image).then(predictions => {
-        let foundCat = false;
+        let foundCar = false;
         predictions.forEach(prediction => {
-            if (prediction.class === 'cat') {
-                foundCat = true;
-                document.getElementById('status').textContent = "Chat détecté 🐱 sur l'image !";
+            if (prediction.class === 'car') {
+                foundCar = true;
+                document.getElementById('status').textContent = "Voiture détectée 🚗 sur l'image !";
                 document.body.style.backgroundColor = "#ff7043"; // Signal visuel
             }
         });
-        if (!foundCat) {
-            document.getElementById('status').textContent = "Pas de chat détecté sur l'image.";
+        if (!foundCar) {
+            document.getElementById('status').textContent = "Pas de voiture détectée sur l'image.";
             document.body.style.backgroundColor = "#e0f7fa"; // Couleur de fond par défaut
         }
     });
