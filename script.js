@@ -1,5 +1,4 @@
 // script.js
-//test
 
 const video = document.getElementById('video');
 const cameraSelect = document.getElementById('cameraSelect');
@@ -8,6 +7,7 @@ const capturedImage = document.getElementById('capturedImage');
 const captureButton = document.getElementById('captureButton');
 const uploadedImage = document.getElementById('uploadedImage');
 const objectToDetect = document.getElementById('objectToDetect');
+const detectButton = document.getElementById('detectButton'); // Bouton détecter
 
 let currentStream;
 let objectToDetectValue = 'car'; // Valeur par défaut
@@ -94,12 +94,20 @@ objectToDetect.addEventListener('input', () => {
     document.getElementById('status').textContent = `Recherche de ${objectToDetectValue}...`;
 });
 
+// Ajouter l'événement click au bouton "Détecter"
+detectButton.addEventListener('click', () => {
+    if (video.style.display === 'block') {
+        detectObjectOnVideo();
+    } else if (capturedImage.style.display === 'block' || uploadedImage.style.display === 'block') {
+        detectObjectOnImage(capturedImage.style.display === 'block' ? capturedImage : uploadedImage);
+    }
+});
+
 // Charger le modèle COCO-SSD
 let model;
 cocoSsd.load().then(loadedModel => {
     model = loadedModel;
-    document.getElementById('status').textContent = `Modèle chargé, recherche de ${objectToDetectValue}...`;
-    detectObjectOnVideo();
+    document.getElementById('status').textContent = `Modèle chargé, prêt à détecter.`;
 });
 
 // Fonction de détection d'objet sur la vidéo
@@ -117,7 +125,6 @@ function detectObjectOnVideo() {
             document.getElementById('status').textContent = `Pas de ${objectToDetectValue} détecté.`;
             document.body.style.backgroundColor = "#e0f7fa"; // Couleur de fond par défaut
         }
-        requestAnimationFrame(detectObjectOnVideo);
     });
 }
 
@@ -133,8 +140,5 @@ function detectObjectOnImage(image) {
             }
         });
         if (!foundObject) {
-            document.getElementById('status').textContent = `Pas de ${objectToDetectValue} détecté sur l'image.`;
-            document.body.style.backgroundColor = "#e0f7fa"; // Couleur de fond par défaut
-        }
-    });
-}
+            document.getElementById('status').textContent = `Pas de ${objectToDetectValue} détecté sur l'image
+            
