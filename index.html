@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Octopus Detector</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #e0f7fa;
+        }
+        #video, #uploadedImage {
+            border: 5px solid #00796b;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            height: auto;
+            display: none; /* Cacher la vidéo et l'image par défaut */
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 24px;
+            color: #00796b;
+        }
+        #cameraSelect, #imageUpload {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Octopus Detector</h1>
+    <video id="video" autoplay></video>
+    <img id="uploadedImage">
+    <select id="cameraSelect"></select>
+    <input type="file" id="imageUpload" accept="image/*">
+    <div id="status">Loading model...</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <script src="script.js"></script>
+</body>
+</html>
