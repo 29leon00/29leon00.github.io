@@ -1,4 +1,5 @@
 // script.js
+//test
 
 const video = document.getElementById('video');
 const cameraSelect = document.getElementById('cameraSelect');
