@@ -92,13 +92,18 @@ captureButton.addEventListener('click', () => {
     detectObjectOnImage(capturedImage);
 });
 
-// Charger le modèle COCO-SSD
+// Charger le modèle COCO-SSD avec un délai de 10 secondes
 let model;
-cocoSsd.load().then(loadedModel => {
-    model = loadedModel;
-    document.getElementById('status').textContent = "Modèle chargé, prêt à détecter...";
-    detectObjectOnVideo();
-});
+const delayInMilliseconds = 10000; // Délai de 10 secondes
+
+setTimeout(() => {
+    document.getElementById('status').textContent = "Chargement du modèle...";
+    cocoSsd.load().then(loadedModel => {
+        model = loadedModel;
+        document.getElementById('status').textContent = "Modèle chargé, prêt à détecter...";
+        detectObjectOnVideo();
+    });
+}, delayInMilliseconds);
 
 // Fonction de détection de l'objet sur la vidéo
 function detectObjectOnVideo() {
