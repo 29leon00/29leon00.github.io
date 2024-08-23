@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Octopus Detector</title>
+    <title>Object Detector</title>
     <style>
         body {
             display: flex;
@@ -27,7 +27,7 @@
             font-size: 24px;
             color: #00796b;
         }
-        #cameraSelect, #imageUpload {
+        #cameraSelect, #imageUpload, #captureButton {
             margin-top: 10px;
         }
         /* Style pour le bouton de capture */
@@ -48,17 +48,25 @@
         #captureButton:active {
             transform: scale(0.9);
         }
+        #objectInput {
+            margin-top: 15px;
+            padding: 10px;
+            font-size: 18px;
+            border: 2px solid #00796b;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
-    <h1>Octopus Detector</h1>
+    <h1>Object Detector</h1>
     <video id="video" autoplay></video>
     <img id="capturedImage">
     <img id="uploadedImage">
     <select id="cameraSelect"></select>
     <input type="file" id="imageUpload" accept="image/*">
-    <button id="captureButton"></button> <!-- Bouton de capture -->
-    <div id="status">Loading model...</div>
+    <input type="text" id="objectInput" placeholder="Entrez l'objet à détecter">
+    <button id="captureButton"></button>
+    <div id="status">Chargement du modèle...</div>
 
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
