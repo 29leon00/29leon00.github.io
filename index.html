@@ -56,12 +56,11 @@
 
   <h1>Détection d'objets avec TensorFlow.js</h1>
   <div id="controls">
-    <select id="cameraSelect" onchange="appInstance.switchCamera(this.value)">
-      <!-- Les options de caméra seront ajoutées dynamiquement -->
-    </select>
+    <select id="cameraSelect"></select>
   </div>
   <div id="video-container">
-    <div id="root"></div>
+    <video id="video" autoplay muted playsinline></video>
+    <canvas id="canvas"></canvas>
   </div>
 
   <script src="detect.js" type="text/babel"></script>
