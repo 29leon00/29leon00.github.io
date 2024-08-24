@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<!-- test -->
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,69 +7,107 @@
     <style>
         body {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             height: 100vh;
             margin: 0;
             background-color: #e0f7fa;
+            font-family: Arial, sans-serif;
         }
-        #video, #capturedImage, #uploadedImage {
-            border: 5px solid #00796b;
-            border-radius: 10px;
-            width: 80%;
-            max-width: 600px;
-            height: auto;
-            display: none; /* Cacher la vidéo et l'image par défaut */
+
+        .left-column {
+            width: 50%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #f5f5f5;
         }
-        #status {
-            margin-top: 20px;
-            font-size: 24px;
-            color: #00796b;
+
+        .right-column {
+            width: 50%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #ffffff;
         }
-        #cameraSelect, #imageUpload, #captureButton {
-            margin-top: 10px;
+
+        video, img {
+            width: 100%;
+            max-width: 500px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
-        /* Style pour le bouton de capture */
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
         #captureButton {
-            width: 80px;
-            height: 80px;
             background-color: red;
             border: none;
             border-radius: 50%;
-            margin-top: 20px;
+            width: 60px;
+            height: 60px;
             cursor: pointer;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.1s ease-in-out;
-        }
-        #captureButton:hover {
-            transform: scale(1.1);
-        }
-        #captureButton:active {
-            transform: scale(0.9);
-        }
-        #objectInput {
-            margin-top: 15px;
-            padding: 10px;
+            color: white;
             font-size: 18px;
-            border: 2px solid #00796b;
-            border-radius: 5px;
+        }
+
+        #status {
+            font-size: 20px;
+            margin-top: 20px;
+        }
+
+        label {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        select, input {
+            font-size: 16px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            width: 100%;
+            max-width: 300px;
         }
     </style>
 </head>
 <body>
-    <h1>Object Detector</h1>
-    <video id="video" autoplay></video>
-    <img id="capturedImage">
-    <img id="uploadedImage">
-    <select id="cameraSelect"></select>
-    <input type="file" id="imageUpload" accept="image/*">
-    <input type="text" id="objectInput" placeholder="Entrez l'objet à détecter">
-    <button id="captureButton"></button>
-    <div id="status">Chargement du modèle...</div>
+
+    <div class="left-column">
+        <video id="video" autoplay></video>
+        <img id="capturedImage" style="display:none;" alt="Captured Image">
+        <img id="uploadedImage" style="display:none;" alt="Uploaded Image">
+    </div>
+
+    <div class="right-column">
+        <div class="controls">
+            <label for="cameraSelect">Sélectionnez votre caméra :</label>
+            <select id="cameraSelect"></select>
+
+            <label for="imageUpload">Importer une image :</label>
+            <input type="file" id="imageUpload" accept="image/*">
+
+            <label for="objectInput">Objet à détecter :</label>
+            <input type="text" id="objectInput" placeholder="Entrez un objet à détecter" value="car">
+
+            <button id="captureButton">📷</button>
+        </div>
+        
+        <div id="status">Chargement...</div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
     <script src="script.js"></script>
+
 </body>
 </html>
