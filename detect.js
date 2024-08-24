@@ -1,49 +1,3 @@
-let currentStream;
-const video = document.getElementById('video'); // Utilisation de l'ID "video" cohérent avec le HTML
-const canvas = document.getElementById('canvas'); // Utilisation de l'ID "canvas" cohérent avec le HTML
-const cameraSelect = document.getElementById('cameraSelect'); // Utilisation de l'ID "cameraSelect" cohérent avec le HTML
-
-// Fonction pour lister les caméras disponibles et remplir le menu déroulant
-navigator.mediaDevices.enumerateDevices().then(devices => {
-    devices.forEach(device => {
-        if (device.kind === 'videoinput') {
-            const option = document.createElement('option');
-            option.value = device.deviceId;
-            option.text = device.label || `Camera ${cameraSelect.length + 1}`;
-            cameraSelect.appendChild(option);
-        }
-    });
-
-    if (cameraSelect.length > 0) {
-        startCamera(cameraSelect.value);
-    }
-});
-
-// Fonction pour démarrer la caméra sélectionnée
-cameraSelect.onchange = () => {
-    startCamera(cameraSelect.value);
-};
-
-function startCamera(deviceId) {
-    if (currentStream) {
-        currentStream.getTracks().forEach(track => track.stop());
-    }
-
-    const constraints = {
-        video: {
-            deviceId: deviceId ? { exact: deviceId } : undefined
-        }
-    };
-
-    navigator.mediaDevices.getUserMedia(constraints).then(stream => {
-        currentStream = stream;
-        video.srcObject = stream;
-        video.style.display = 'block';
-    }).catch(err => {
-        console.error("Erreur d'accès à la caméra:", err);
-    });
-}
-
 class App extends React.Component {
     constructor(props) {
         super(props);
@@ -51,8 +5,11 @@ class App extends React.Component {
     }
 
     async componentDidMount() {
-        const model = await cocoSsd.load();
-        this.detectFromVideoFrame(model, video);
+        // Attendre que la vidéo soit prête avant de charger le modèle et de commencer la détection
+        video.addEventListener('loadeddata', async () => {
+            const model = await cocoSsd.load();
+            this.detectFromVideoFrame(model, video);
+        });
     }
 
     detectFromVideoFrame = (model, video) => {
@@ -90,3 +47,4 @@ class App extends React.Component {
 }
 
 ReactDOM.render(React.createElement(App), document.getElementById('video-container'));
+
