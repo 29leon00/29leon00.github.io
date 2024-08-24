@@ -1,6 +1,7 @@
 let currentStream;
-const video = document.getElementById('video');
-const cameraSelect = document.getElementById('cameraSelect');
+const video = document.getElementById('video'); // Utilisation de l'ID "video" cohérent avec le HTML
+const canvas = document.getElementById('canvas'); // Utilisation de l'ID "canvas" cohérent avec le HTML
+const cameraSelect = document.getElementById('cameraSelect'); // Utilisation de l'ID "cameraSelect" cohérent avec le HTML
 
 navigator.mediaDevices.enumerateDevices().then(devices => {
     devices.forEach(device => {
@@ -44,7 +45,7 @@ function startCamera(deviceId) {
 class App extends React.Component {
     constructor(props) {
         super(props);
-        this.canvasRef = React.createRef();
+        this.canvasRef = React.createRef(); // Référence au canvas
     }
 
     async componentDidMount() {
@@ -82,7 +83,7 @@ class App extends React.Component {
     };
 
     render() {
-        return <canvas ref={this.canvasRef} width="1280" height="720"></canvas>;
+        return <canvas ref={this.canvasRef} id="canvas" width="1280" height="720"></canvas>;
     }
 }
 
