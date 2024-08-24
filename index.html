@@ -13,17 +13,9 @@
   <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/babel-standalone@6.26.0/babel.min.js"></script>
   <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-      overflow: hidden;
+    body {
       font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      text-align: center;
     }
     h1 {
       margin-bottom: 20px;
@@ -31,39 +23,24 @@
     #controls {
       margin-bottom: 20px;
     }
-    select {
-      padding: 10px;
+    #controls button {
+      margin-right: 10px;
+      padding: 10px 20px;
       font-size: 16px;
       cursor: pointer;
-    }
-    #video-container {
-      position: relative;
-      width: 100%;
-      height: 100%;
-    }
-    video, canvas {
-      position: absolute;
-      top: 800px;
-      left: 800px;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
     }
   </style>
 </head>
 
 <body>
 
-  <h1>Détection d'objets avec TensorFlow.js</h1>
+  <h1>Démo de détection d'objets avec TensorFlow.js</h1>
   <div id="controls">
-    <select id="cameraSelect"></select>
+    <button onclick="appInstance.switchCamera()">Changer de caméra</button>
   </div>
-  <div id="video-container">
-    <video id="video" autoplay muted playsinline></video>
-    <canvas id="canvas"></canvas>
-  </div>
+  <div id="root"></div>
 
   <script src="detect.js" type="text/babel"></script>
-
+  
 </body>
 </html>
