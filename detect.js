@@ -5,13 +5,7 @@ class App extends React.Component {
     }
 
     async componentDidMount() {
-        // Attendre que la vidéo soit prête avant de charger le modèle et de commencer la détection
-        video.addEventListener('loadeddata', async () => {
-            const model = await cocoSsd.load();
-            this.detectFromVideoFrame(model, video);
-        });
-    }
-
+       
     detectFromVideoFrame = (model, video) => {
         const detect = async () => {
             const predictions = await model.detect(video);
