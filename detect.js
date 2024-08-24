@@ -3,6 +3,7 @@ const video = document.getElementById('video'); // Utilisation de l'ID "video" c
 const canvas = document.getElementById('canvas'); // Utilisation de l'ID "canvas" cohérent avec le HTML
 const cameraSelect = document.getElementById('cameraSelect'); // Utilisation de l'ID "cameraSelect" cohérent avec le HTML
 
+// Fonction pour lister les caméras disponibles et remplir le menu déroulant
 navigator.mediaDevices.enumerateDevices().then(devices => {
     devices.forEach(device => {
         if (device.kind === 'videoinput') {
@@ -18,6 +19,7 @@ navigator.mediaDevices.enumerateDevices().then(devices => {
     }
 });
 
+// Fonction pour démarrer la caméra sélectionnée
 cameraSelect.onchange = () => {
     startCamera(cameraSelect.value);
 };
@@ -64,8 +66,8 @@ class App extends React.Component {
 
     renderPredictions = (predictions) => {
         const ctx = this.canvasRef.current.getContext("2d");
-        ctx.clearRect(0, 0, this.canvasRef.current.width, this.canvasRef.current.height);
-        ctx.drawImage(video, 0, 0, this.canvasRef.current.width, this.canvasRef.current.height);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
         predictions.forEach(prediction => {
             ctx.beginPath();
@@ -87,5 +89,4 @@ class App extends React.Component {
     }
 }
 
-const domContainer = document.querySelector('#video-container');
-ReactDOM.render(React.createElement(App), domContainer);
+ReactDOM.render(React.createElement(App), document.getElementById('video-container'));
