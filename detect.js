@@ -24,7 +24,8 @@ class App extends React.Component {
       this.setState({ cameras: videoDevices });
 
       if (videoDevices.length > 0) {
-        this.switchCamera();
+        this.populateCameraOptions(videoDevices);
+        this.switchCamera(videoDevices[0].deviceId);
       } else {
         alert('Aucune caméra détectée');
       }
@@ -33,21 +34,29 @@ class App extends React.Component {
     }
   };
 
-  switchCamera = async () => {
-    const { cameras, currentCameraIndex, currentStream } = this.state;
+  populateCameraOptions = (cameras) => {
+    const cameraSelect = document.getElementById('cameraSelect');
+    cameras.forEach((camera, index) => {
+      const option = document.createElement('option');
+      option.value = camera.deviceId;
+      option.text = camera.label || `Caméra ${index + 1}`;
+      cameraSelect.appendChild(option);
+    });
+  };
+
+  switchCamera = async (deviceId) => {
+    const { currentStream } = this.state;
+
     if (currentStream) {
       currentStream.getTracks().forEach(track => track.stop());
     }
 
-    const nextCameraIndex = (currentCameraIndex + 1) % cameras.length;
-    const selectedCamera = cameras[nextCameraIndex];
-
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { deviceId: selectedCamera.deviceId },
+      video: { deviceId: deviceId },
     });
 
     this.videoRef.current.srcObject = stream;
-    this.setState({ currentStream: stream, currentCameraIndex: nextCameraIndex });
+    this.setState({ currentStream: stream });
 
     this.detectFromVideoFrame(this.state.model, this.videoRef.current);
   };
@@ -87,14 +96,12 @@ class App extends React.Component {
       <div>
         <video
           ref={this.videoRef}
-          style={{ display: "none" }}
           autoPlay
           muted
           playsInline
-          width="720"
-          height="600"
+          style={{ display: "none" }}
         />
-        <canvas ref={this.canvasRef} width="720" height="600" />
+        <canvas ref={this.canvasRef} />
       </div>
     );
   }
