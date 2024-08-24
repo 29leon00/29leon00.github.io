@@ -23,8 +23,8 @@ class App extends React.Component {
 
     renderPredictions = (predictions) => {
         const ctx = this.canvasRef.current.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        ctx.clearRect(80, 80, canvas.width, canvas.height);
+        ctx.drawImage(video, 80, 80, canvas.width, canvas.height);
 
         predictions.forEach(prediction => {
             ctx.beginPath();
