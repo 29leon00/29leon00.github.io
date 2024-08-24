@@ -66,11 +66,23 @@ imageUpload.addEventListener('change', event => {
     if (file) {
         const reader = new FileReader();
         reader.onload = e => {
-            uploadedImage.src = e.target.result;
-            video.style.display = 'none';
-            capturedImage.style.display = 'none';
-            uploadedImage.style.display = 'block';
-            detectObjectOnImage(uploadedImage);
+            const image = new Image();
+            image.onload = () => {
+                const canvas = document.createElement('canvas');
+                const maxDim = Math.max(image.width, image.height);
+                canvas.width = image.width;
+                canvas.height = image.height;
+                const context = canvas.getContext('2d');
+                context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+                uploadedImage.src = canvas.toDataURL('image/png');
+                video.style.display = 'none';
+                capturedImage.style.display = 'none';
+                uploadedImage.style.display = 'block';
+
+                detectObjectOnImage(uploadedImage);
+            };
+            image.src = e.target.result;
         };
         reader.readAsDataURL(file);
     }
