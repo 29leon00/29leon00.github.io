@@ -78,6 +78,16 @@
             width: 100%;
             max-width: 300px;
         }
+        
+              .import {
+            font-size: 16px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            width: 100%;
+            max-width: 300px;
+        }
     </style>
 </head>
 <body>
@@ -95,7 +105,7 @@
             <select id="cameraSelect"></select>
 
             <label for="imageUpload">Importer une image :</label>
-            <input type="file" id="imageUpload" accept="image/*">
+            <input class=import type="file" id="imageUpload" accept="image/*">
 
             <label for="objectSelect">Objet à détecter :</label>
             <select id="objectSelect">
