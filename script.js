@@ -6,12 +6,12 @@ const imageUpload = document.getElementById('imageUpload');
 const capturedImage = document.getElementById('capturedImage');
 const captureButton = document.getElementById('captureButton');
 const uploadedImage = document.getElementById('uploadedImage');
-const objectSelect = document.getElementById('objectSelect');
+const objectSelect = document.getElementById('objectSelect'); // Changement ici
 
 let currentStream;
-let objectToDetect = 'person'; // Par défaut, détecte les personnes
+let objectToDetect = 'car'; // Par défaut, détecte les voitures
 
-// Met à jour l'objet à détecter lorsque l'utilisateur change la sélection
+// Met à jour l'objet à détecter lorsque l'utilisateur sélectionne un objet
 objectSelect.addEventListener('change', () => {
     objectToDetect = objectSelect.value.toLowerCase();
 });
@@ -141,3 +141,4 @@ function detectObjectOnImage(image) {
         }
     });
 }
+
