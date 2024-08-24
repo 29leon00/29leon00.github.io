@@ -9,7 +9,12 @@ const uploadedImage = document.getElementById('uploadedImage');
 const objectSelect = document.getElementById('objectSelect');
 
 let currentStream;
-let objectToDetect = 'car'; // Par défaut, détecte les voitures
+let objectToDetect = 'person'; // Par défaut, détecte les personnes
+
+// Met à jour l'objet à détecter lorsque l'utilisateur change la sélection
+objectSelect.addEventListener('change', () => {
+    objectToDetect = objectSelect.value.toLowerCase();
+});
 
 // Fonction pour accéder à la caméra sélectionnée
 function startCamera(deviceId) {
@@ -87,55 +92,52 @@ captureButton.addEventListener('click', () => {
     detectObjectOnImage(capturedImage);
 });
 
-// Charger le modèle COCO-SSD de manière asynchrone
+// Charger le modèle COCO-SSD avec un délai de 10 secondes
 let model;
-async function loadModel() {
-    document.getElementById('status').textContent = "Chargement du modèle...";
-    model = await cocoSsd.load({ base: 'lite_mobilenet_v2' }); // Utilisation du modèle léger
-    document.getElementById('status').textContent = "Modèle chargé, prêt à détecter...";
-    detectObjectOnVideo();
-}
+const delayInMilliseconds = 10000; // Délai de 10 secondes
 
-// Appeler le chargement du modèle dès que possible
-loadModel();
+setTimeout(() => {
+    document.getElementById('status').textContent = "Chargement du modèle...";
+    cocoSsd.load().then(loadedModel => {
+        model = loadedModel;
+        document.getElementById('status').textContent = "Modèle chargé, prêt à détecter...";
+        detectObjectOnVideo();
+    });
+}, delayInMilliseconds);
 
 // Fonction de détection de l'objet sur la vidéo
 function detectObjectOnVideo() {
-    if (model) {
-        model.detect(video).then(predictions => {
-            let foundObject = false;
-            predictions.forEach(prediction => {
-                if (prediction.class.toLowerCase() === objectSelect.value) {
-                    foundObject = true;
-                    document.getElementById('status').textContent = `${objectSelect.value.charAt(0).toUpperCase() + objectSelect.value.slice(1)} détecté(e) !`;
-                    document.body.style.backgroundColor = "#ff7043"; // Signal visuel
-                }
-            });
-            if (!foundObject) {
-                document.getElementById('status').textContent = `Pas de ${objectSelect.value} détecté(e).`;
-                document.body.style.backgroundColor = "#e0f7fa"; // Couleur de fond par défaut
+    model.detect(video).then(predictions => {
+        let foundObject = false;
+        predictions.forEach(prediction => {
+            if (prediction.class.toLowerCase() === objectToDetect) {
+                foundObject = true;
+                document.getElementById('status').textContent = `${objectToDetect.charAt(0).toUpperCase() + objectToDetect.slice(1)} détecté(e) !`;
+                document.body.style.backgroundColor = "#ff7043"; // Signal visuel
             }
-            requestAnimationFrame(detectObjectOnVideo);
         });
-    }
+        if (!foundObject) {
+            document.getElementById('status').textContent = `Pas de ${objectToDetect} détecté(e).`;
+            document.body.style.backgroundColor = "#e0f7fa"; // Couleur de fond par défaut
+        }
+        requestAnimationFrame(detectObjectOnVideo);
+    });
 }
 
 // Fonction de détection de l'objet sur l'image importée ou capturée
 function detectObjectOnImage(image) {
-    if (model) {
-        model.detect(image).then(predictions => {
-            let foundObject = false;
-            predictions.forEach(prediction => {
-                if (prediction.class.toLowerCase() === objectSelect.value) {
-                    foundObject = true;
-                    document.getElementById('status').textContent = `${objectSelect.value.charAt(0).toUpperCase() + objectSelect.value.slice(1)} détecté(e) sur l'image !`;
-                    document.body.style.backgroundColor = "#ff7043"; // Signal visuel
-                }
-            });
-            if (!foundObject) {
-                document.getElementById('status').textContent = `Pas de ${objectSelect.value} détecté(e) sur l'image.`;
-                document.body.style.backgroundColor = "#e0f7fa"; // Couleur de fond par défaut
+    model.detect(image).then(predictions => {
+        let foundObject = false;
+        predictions.forEach(prediction => {
+            if (prediction.class.toLowerCase() === objectToDetect) {
+                foundObject = true;
+                document.getElementById('status').textContent = `${objectToDetect.charAt(0).toUpperCase() + objectToDetect.slice(1)} détecté(e) sur l'image !`;
+                document.body.style.backgroundColor = "#ff7043"; // Signal visuel
             }
         });
-    }
+        if (!foundObject) {
+            document.getElementById('status').textContent = `Pas de ${objectToDetect} détecté(e) sur l'image.`;
+            document.body.style.backgroundColor = "#e0f7fa"; // Couleur de fond par défaut
+        }
+    });
 }
