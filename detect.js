@@ -67,10 +67,7 @@ class App extends React.Component {
 
     render() {
         return (
-            <div id="video-container">
-                <video ref={this.videoRef} autoPlay muted playsInline width="1280" height="720"></video>
-                <canvas ref={this.canvasRef} width="1280" height="720"></canvas>
-            </div>
+           
         );
     }
 }
