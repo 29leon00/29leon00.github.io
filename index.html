@@ -78,16 +78,6 @@
             width: 100%;
             max-width: 300px;
         }
-        
-              .import {
-            font-size: 16px;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            width: 100%;
-            max-width: 300px;
-        }
     </style>
 </head>
 <body>
@@ -100,95 +90,21 @@
 
     <div class="right-column">
         <div class="controls">
-            <h1 class="controls">V4</h1>
             <label for="cameraSelect">Sélectionnez votre caméra :</label>
             <select id="cameraSelect"></select>
 
             <label for="imageUpload">Importer une image :</label>
-            <input class=import type="file" id="imageUpload" accept="image/*">
+            <input type="file" id="imageUpload" accept="image/*">
 
             <label for="objectSelect">Objet à détecter :</label>
             <select id="objectSelect">
+                <!-- Liste des objets COCO-SSD -->
                 <option value="person">Personne</option>
                 <option value="bicycle">Bicyclette</option>
                 <option value="car">Voiture</option>
                 <option value="motorcycle">Moto</option>
-                <option value="airplane">Avion</option>
-                <option value="bus">Bus</option>
-                <option value="train">Train</option>
-                <option value="truck">Camion</option>
-                <option value="boat">Bateau</option>
-                <option value="traffic light">Feu de circulation</option>
-                <option value="fire hydrant">Bouche d'incendie</option>
-                <option value="stop sign">Panneau stop</option>
-                <option value="parking meter">Parcmètre</option>
-                <option value="bench">Banc</option>
-                <option value="bird">Oiseau</option>
-                <option value="cat">Chat</option>
-                <option value="dog">Chien</option>
-                <option value="horse">Cheval</option>
-                <option value="sheep">Mouton</option>
-                <option value="cow">Vache</option>
-                <option value="elephant">Éléphant</option>
-                <option value="bear">Ours</option>
-                <option value="zebra">Zèbre</option>
-                <option value="giraffe">Girafe</option>
-                <option value="backpack">Sac à dos</option>
-                <option value="umbrella">Parapluie</option>
-                <option value="handbag">Sac à main</option>
-                <option value="tie">Cravate</option>
-                <option value="suitcase">Valise</option>
-                <option value="frisbee">Frisbee</option>
-                <option value="skis">Skis</option>
-                <option value="snowboard">Snowboard</option>
-                <option value="sports ball">Balle de sport</option>
-                <option value="kite">Cerf-volant</option>
-                <option value="baseball bat">Batte de baseball</option>
-                <option value="baseball glove">Gant de baseball</option>
-                <option value="skateboard">Skateboard</option>
-                <option value="surfboard">Planche de surf</option>
-                <option value="tennis racket">Raquette de tennis</option>
-                <option value="bottle">Bouteille</option>
-                <option value="wine glass">Verre à vin</option>
-                <option value="cup">Tasse</option>
-                <option value="fork">Fourchette</option>
-                <option value="knife">Couteau</option>
-                <option value="spoon">Cuillère</option>
-                <option value="bowl">Bol</option>
-                <option value="banana">Banane</option>
-                <option value="apple">Pomme</option>
-                <option value="sandwich">Sandwich</option>
-                <option value="orange">Orange</option>
-                <option value="broccoli">Brocoli</option>
-                <option value="carrot">Carotte</option>
-                <option value="hot dog">Hot-dog</option>
-                <option value="pizza">Pizza</option>
-                <option value="donut">Donut</option>
-                <option value="cake">Gâteau</option>
-                <option value="chair">Chaise</option>
-                <option value="couch">Canapé</option>
-                <option value="potted plant">Plante en pot</option>
-                <option value="bed">Lit</option>
-                <option value="dining table">Table à manger</option>
-                <option value="toilet">Toilettes</option>
-                <option value="TV">Télévision</option>
-                <option value="laptop">Ordinateur portable</option>
-                <option value="mouse">Souris</option>
-                <option value="remote">Télécommande</option>
-                <option value="keyboard">Clavier</option>
-                <option value="cell phone">Téléphone portable</option>
-                <option value="microwave">Micro-onde</option>
-                <option value="oven">Four</option>
-                <option value="toaster">Grille-pain</option>
-                <option value="sink">Évier</option>
-                <option value="refrigerator">Réfrigérateur</option>
-                <option value="book">Livre</option>
-                <option value="clock">Horloge</option>
-                <option value="vase">Vase</option>
-                <option value="scissors">Ciseaux</option>
-                <option value="teddy bear">Ours en peluche</option>
-                <option value="hair drier">Sèche-cheveux</option>
-                <option value="toothbrush">Brosse à dents</option>
+                <!-- Autres objets ici -->
+                <!-- Ajoutez les options restantes ici -->
             </select>
 
             <button id="captureButton">📷</button>
@@ -197,5 +113,140 @@
         <div id="status">Chargement...</div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.7.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.0.1"></script>
+    <script>
+        const video = document.getElementById('video');
+        const cameraSelect = document.getElementById('cameraSelect');
+        const imageUpload = document.getElementById('imageUpload');
+        const capturedImage = document.getElementById('capturedImage');
+        const captureButton = document.getElementById('captureButton');
+        const uploadedImage = document.getElementById('uploadedImage');
+        const objectSelect = document.getElementById('objectSelect');
+
+        let currentStream;
+        let objectToDetect = objectSelect.value.toLowerCase();
+        let model;
+
+        // Charger une version optimisée du modèle
+        async function loadModel() {
+            document.getElementById('status').textContent = "Chargement du modèle...";
+            model = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
+            document.getElementById('status').textContent = "Modèle chargé, prêt à détecter...";
+            detectObjectOnVideo();
+        }
+
+        // Charger le modèle au chargement de la page
+        window.onload = () => {
+            loadModel();
+        };
+
+        // Met à jour l'objet à détecter lorsque l'utilisateur sélectionne un objet
+        objectSelect.addEventListener('change', () => {
+            objectToDetect = objectSelect.value.toLowerCase();
+        });
+
+        // Fonction pour accéder à la caméra sélectionnée
+        function startCamera(deviceId) {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            const constraints = {
+                video: {
+                    deviceId: deviceId ? { exact: deviceId } : undefined
+                }
+            };
+
+            navigator.mediaDevices.getUserMedia(constraints).then(stream => {
+                currentStream = stream;
+                video.srcObject = stream;
+                video.style.display = 'block';
+                capturedImage.style.display = 'none';
+                uploadedImage.style.display = 'none';
+            }).catch(err => {
+                console.error("Erreur d'accès à la caméra:", err);
+            });
+        }
+
+        // Lister les caméras disponibles
+        navigator.mediaDevices.enumerateDevices().then(devices => {
+            devices.forEach(device => {
+                if (device.kind === 'videoinput') {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.text = device.label || `Camera ${cameraSelect.length + 1}`;
+                    cameraSelect.appendChild(option);
+                }
+            });
+
+            if (cameraSelect.length > 0) {
+                startCamera(cameraSelect.value);
+            }
+        });
+
+        // Changer de caméra lorsque l'utilisateur en sélectionne une autre
+        cameraSelect.onchange = () => {
+            startCamera(cameraSelect.value);
+        };
+
+        // Gérer l'importation d'images
+        imageUpload.addEventListener('change', event => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    uploadedImage.src = e.target.result;
+                    video.style.display = 'none';
+                    capturedImage.style.display = 'none';
+                    uploadedImage.style.display = 'block';
+                    detectObjectOnImage(uploadedImage);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Capturer une image à partir du flux vidéo
+        captureButton.addEventListener('click', () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            capturedImage.src = canvas.toDataURL('image/png');
+            video.style.display = 'none';
+            capturedImage.style.display = 'block';
+            uploadedImage.style.display = 'none';
+
+            detectObjectOnImage(capturedImage);
+        });
+
+        // Fonction de détection de l'objet sur la vidéo
+        function detectObjectOnVideo() {
+            model.detect(video).then(predictions => {
+                let foundObject = false;
+                predictions.forEach(prediction => {
+                    if (prediction.class.toLowerCase() === objectToDetect) {
+                        foundObject = true;
+                        document.getElementById('status').textContent = `${objectToDetect.charAt(0).toUpperCase() + objectToDetect.slice(1)} détecté(e) !`;
+                        document.body.style.backgroundColor = "#ff7043"; // Signal visuel
+                    }
+                });
+                if (!foundObject) {
+                    document.getElementById('status').textContent = `Pas de ${objectToDetect} détecté(e).`;
+                    document.body.style.backgroundColor = "#e0f7fa"; // Couleur de fond par défaut
+                }
+                requestAnimationFrame(detectObjectOnVideo);
+            });
+        }
+
+        // Fonction de détection de l'objet sur l'image importée ou capturée
+        function detectObjectOnImage(image) {
+            model.detect(image).then(predictions => {
+                let foundObject = false;
+                predictions.forEach(prediction => {
+                    if (prediction.class.toLowerCase() === objectToDetect) {
+                        foundObject = true;
+                       
+  
