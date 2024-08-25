@@ -1,7 +1,7 @@
 let currentStream = null;
 let isBackCamera = true;
 let model = null;
-let videoReady = false; // Nouveau flag pour s'assurer que la vidéo est prête
+let videoReady = false;
 
 async function startDetection() {
     const video = document.getElementById('webcam');
@@ -15,7 +15,7 @@ async function startDetection() {
     // Attendre que la vidéo soit prête
     video.addEventListener('loadeddata', () => {
         videoReady = true;
-        resizeCanvas(); // Redimensionner le canvas
+        resizeCanvas();
         detectFrame(video, context); // Lancer la détection
     });
 
@@ -55,7 +55,7 @@ function resizeCanvas() {
 }
 
 async function detectFrame(video, context) {
-    if (model && videoReady) { // Assurez-vous que le modèle et la vidéo sont prêts
+    if (model && videoReady) {
         const predictions = await model.detect(video);
 
         // Nettoyer le canvas avant de dessiner
@@ -77,10 +77,10 @@ async function detectFrame(video, context) {
         });
     }
 
-    // Utiliser setTimeout pour gérer la fréquence des détections
+    // Appel récursif après 22 ms pour viser 45 fps
     setTimeout(() => {
         detectFrame(video, context);
-    }, 50); // Ajuster l'intervalle si nécessaire
+    }, 22); // 22 ms pour approximer 45 fps
 }
 
 window.onload = () => {
