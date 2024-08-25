@@ -98,8 +98,8 @@ function startObjectDetection() {
             });
         }
 
-        // Répéter la détection des objets toutes les 200 ms
-        setTimeout(detectObjects, 200);
+        // Répéter la détection des objets toutes les 500 ms
+        setTimeout(detectObjects, 500);
     }
 
     detectObjects();
