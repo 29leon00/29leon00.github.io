@@ -8,17 +8,16 @@ async function startDetection() {
     const canvas = document.getElementById('canvas');
     const context = canvas.getContext('2d');
 
-    // Ajuster la taille de la vidéo et du canvas à la taille de l'écran
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+    // Ajuster la taille du canvas pour qu'il corresponde à la taille de la vidéo
+    video.addEventListener('loadeddata', () => {
+        resizeCanvas();
+    });
 
     // Charger le modèle COCO-SSD
     model = await cocoSsd.load();
 
     // Démarrer la détection en continu
-    video.onloadeddata = () => {
-        detectFrame(video, model, context);
-    };
+    detectFrame(video, model, context);
 
     // Gestion du bouton de changement de caméra
     document.getElementById('switchCamera').addEventListener('click', async () => {
@@ -59,6 +58,8 @@ async function detectFrame(video, model, context) {
     const predictions = await model.detect(video);
 
     context.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Dessiner la vidéo sur le canvas
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     predictions.forEach(prediction => {
@@ -72,6 +73,7 @@ async function detectFrame(video, model, context) {
         context.fillText(prediction.class, x, y > 10 ? y - 5 : 10);
     });
 
+    // Utiliser requestAnimationFrame pour une détection fluide
     requestAnimationFrame(() => detectFrame(video, model, context));
 }
 
