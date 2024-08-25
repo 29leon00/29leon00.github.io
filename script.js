@@ -18,10 +18,10 @@ async function startDetection() {
     // Charger le modèle COCO-SSD
     const model = await cocoSsd.load();
 
-    // Démarrer la détection en continu
-    video.onloadeddata = () => {
+    // Démarrer la détection à intervalles réguliers
+    setInterval(() => {
         detectFrame(video, model, context);
-    };
+    }, 100); // Réduit la fréquence à 10 FPS pour de meilleures performances
 
     // Gestion du bouton de changement de caméra
     document.getElementById('switchCamera').addEventListener('click', async () => {
@@ -61,32 +61,13 @@ function resizeCanvas() {
     video.height = container.clientHeight;
 }
 
-// Fonction pour dessiner des contours dynamiques autour des objets détectés
-function drawContours(prediction, context) {
+// Fonction pour dessiner les contours rectangulaires autour des objets détectés
+function drawBoundingBox(prediction, context) {
     const [x, y, width, height] = prediction.bbox;
 
-    const stepX = width / 10;  // Divise le rectangle en plusieurs segments sur l'axe X
-    const stepY = height / 10; // Divise le rectangle en plusieurs segments sur l'axe Y
-
     context.strokeStyle = '#00FF00';
-    context.lineWidth = 2;
-
-    context.beginPath();
-
-    // Tracer les segments du contour de manière plus précise (simulation)
-    for (let i = 0; i <= 10; i++) {
-        context.moveTo(x + i * stepX, y);
-        context.lineTo(x + i * stepX, y + stepY); // Segment haut
-        context.moveTo(x + i * stepX, y + height);
-        context.lineTo(x + i * stepX, y + height - stepY); // Segment bas
-
-        context.moveTo(x, y + i * stepY);
-        context.lineTo(x + stepX, y + i * stepY); // Segment gauche
-        context.moveTo(x + width, y + i * stepY);
-        context.lineTo(x + width - stepX, y + i * stepY); // Segment droit
-    }
-
-    context.stroke();
+    context.lineWidth = 3;
+    context.strokeRect(x, y, width, height);
 }
 
 // Fonction pour détecter les objets à chaque frame
@@ -102,7 +83,7 @@ async function detectFrame(video, model, context) {
 
     // Parcourir les prédictions et dessiner les contours
     predictions.forEach(prediction => {
-        drawContours(prediction, context);
+        drawBoundingBox(prediction, context);
 
         // Dessiner le label de l'objet
         const [x, y] = prediction.bbox;
@@ -110,13 +91,9 @@ async function detectFrame(video, model, context) {
         context.font = '18px Arial';
         context.fillText(prediction.class, x, y > 20 ? y - 10 : 10);
     });
-
-    // Reprendre la détection pour la prochaine frame
-    requestAnimationFrame(() => detectFrame(video, model, context));
 }
 
 // Lancer la détection quand la page est chargée
 window.onload = () => {
     startDetection();
 };
-                       
