@@ -21,13 +21,22 @@
             height: 100%;
         }
 
-        video, canvas {
+        video {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain; /* Maintient les proportions de la vidéo */
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* S'assurer que les événements passent au travers du canvas */
         }
 
         #switchCamera {
