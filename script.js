@@ -16,8 +16,7 @@ async function startDetection() {
     video.addEventListener('loadeddata', () => {
         videoReady = true;
         resizeCanvas(); // Redimensionner le canvas
-        startVideoRendering(); // Commencer l'affichage de la vidéo
-        startObjectDetection(); // Commencer la détection des objets
+        detectFrame(video, context); // Lancer la détection
     });
 
     // Gestion du bouton de changement de caméra
@@ -55,54 +54,33 @@ function resizeCanvas() {
     canvas.height = video.videoHeight;
 }
 
-function startVideoRendering() {
-    const video = document.getElementById('webcam');
-    const canvas = document.getElementById('canvas');
-    const context = canvas.getContext('2d');
+async function detectFrame(video, context) {
+    if (model && videoReady) { // Assurez-vous que le modèle et la vidéo sont prêts
+        const predictions = await model.detect(video);
 
-    function renderFrame() {
+        // Nettoyer le canvas avant de dessiner
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
         // Dessiner la vidéo sur le canvas
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        requestAnimationFrame(renderFrame);
+
+        // Dessiner les prédictions
+        predictions.forEach(prediction => {
+            const [x, y, width, height] = prediction.bbox;
+            context.strokeStyle = '#00FF00';
+            context.lineWidth = 2;
+            context.strokeRect(x, y, width, height);
+
+            context.fillStyle = '#00FF00';
+            context.font = '16px Arial';
+            context.fillText(prediction.class, x, y > 10 ? y - 5 : 10);
+        });
     }
 
-    // Démarrer la boucle de rendu vidéo
-    requestAnimationFrame(renderFrame);
-}
-
-function startObjectDetection() {
-    const video = document.getElementById('webcam');
-    const canvas = document.getElementById('canvas');
-    const context = canvas.getContext('2d');
-
-    async function detectObjects() {
-        if (model && videoReady) { // Assurez-vous que le modèle et la vidéo sont prêts
-            const predictions = await model.detect(video);
-
-            // Nettoyer les anciens rectangles de détection
-            context.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Dessiner la vidéo sur le canvas
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            // Dessiner les prédictions
-            predictions.forEach(prediction => {
-                const [x, y, width, height] = prediction.bbox;
-                context.strokeStyle = '#00FF00';
-                context.lineWidth = 2;
-                context.strokeRect(x, y, width, height);
-
-                context.fillStyle = '#00FF00';
-                context.font = '16px Arial';
-                context.fillText(prediction.class, x, y > 10 ? y - 5 : 10);
-            });
-        }
-
-        // Répéter la détection des objets toutes les 500 ms
-        setTimeout(detectObjects, 500);
-    }
-
-    detectObjects();
+    // Utiliser setTimeout pour gérer la fréquence des détections
+    setTimeout(() => {
+        detectFrame(video, context);
+    }, 50); // Ajuster l'intervalle si nécessaire
 }
 
 window.onload = () => {
