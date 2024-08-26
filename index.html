@@ -3,71 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Object detector</title>
+    <title>COCO-SSD Object Detection</title>
     <style>
-        body {
+        body, html {
             margin: 0;
+            padding: 0;
             overflow: hidden;
+            width: 100%;
+            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             background-color: #000;
         }
 
-        .container {
+        #videoContainer {
             position: relative;
             width: 100%;
             height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: black;
+            overflow: hidden;
         }
 
         video {
-    width: 100%;
-    height: 100%;
-    object-fit: contain; /* Empêche l'étirement de la vidéo */
-    position: absolute;
-    top: 0;
-    left: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: auto;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
         }
 
-
-            canvas {
+        canvas {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none; /* S'assurer que les événements passent au travers du canvas */
+            pointer-events: none;
         }
 
         #switchCamera {
             position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
+            bottom: 20px;
+            left: 20px;
             padding: 10px 20px;
-            background-color: #61dafb;
-            color: #000;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
             border: none;
             border-radius: 5px;
-            font-size: 16px;
             cursor: pointer;
+            z-index: 10;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <button id="switchCamera">Changer de caméra</button>
-        <video id="webcam" autoplay playsinline muted></video>
+    <div id="videoContainer">
+        <video id="webcam" autoplay muted></video>
         <canvas id="canvas"></canvas>
     </div>
+    <button id="switchCamera">Switch Camera</button>
 
-    <!-- TensorFlow.js -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <!-- COCO-SSD -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
-    <!-- Script -->
     <script src="script.js"></script>
 </body>
 </html>
