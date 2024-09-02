@@ -22,6 +22,24 @@ const server = http.createServer((req, res) => {
         req.on('close', () => {
             audioListeners = audioListeners.filter(listener => listener !== res);
         });
+    } else if (req.url === '/login') {
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk;
+        });
+
+        req.on('end', () => {
+            const { email, password } = JSON.parse(body);
+
+            // Vérification des identifiants
+            if (email === "mahe.ailliot@gmail.com" && password === "Mahe25892589") {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true }));
+            } else {
+                res.writeHead(401, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: false }));
+            }
+        });
     } else {
         res.writeHead(404);
         res.end('404 Not Found');
