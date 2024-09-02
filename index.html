@@ -38,23 +38,13 @@
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
 
-            // Envoie les données de connexion au serveur
-            fetch('/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, password })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && email === "mahe.ailliot@gmail.com") {
-                    document.getElementById('broadcastInterface').style.display = 'block';
-                    document.getElementById('loginForm').style.display = 'none';
-                } else {
-                    alert('Email ou mot de passe incorrect');
-                }
-            });
+            // Vérification basique des identifiants
+            if (email === "mahe.ailliot@gmail.com" && password === "Mahe25892589") {
+                document.getElementById('broadcastInterface').style.display = 'block';
+                document.getElementById('loginForm').style.display = 'none';
+            } else {
+                alert('Email ou mot de passe incorrect');
+            }
         }
 
         // Fonction pour commencer la diffusion
