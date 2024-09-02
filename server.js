@@ -1,20 +1,13 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const WebSocket = require('ws');
 
-// Dossier contenant les fichiers audio
-const audioDirectory = path.join(__dirname, 'audio');
-
-// Fonction pour obtenir un fichier aléatoire du dossier audio
-function getRandomAudioFile() {
-    const files = fs.readdirSync(audioDirectory).filter(file => file.endsWith('.mp3'));
-    const randomFile = files[Math.floor(Math.random() * files.length)];
-    return path.join(audioDirectory, randomFile);
-}
+// Dossier où sont stockés les fichiers audio
+const audioDir = path.join(__dirname, 'audio');
 
 const server = http.createServer((req, res) => {
     if (req.url === '/') {
+        // Envoyer la page HTML principale
         fs.readFile('index.html', (err, data) => {
             if (err) {
                 res.writeHead(500);
@@ -25,30 +18,36 @@ const server = http.createServer((req, res) => {
             }
         });
     } else if (req.url === '/stream') {
-        const audioFile = getRandomAudioFile();
-        const stream = fs.createReadStream(audioFile);
+        // Récupérer tous les fichiers audio du dossier
+        fs.readdir(audioDir, (err, files) => {
+            if (err) {
+                res.writeHead(500);
+                res.end('Erreur serveur lors de la lecture du dossier audio');
+                return;
+            }
 
-        res.writeHead(200, { 'Content-Type': 'audio/mpeg' });
-        stream.pipe(res);
+            // Filtrer les fichiers pour ne garder que les fichiers audio
+            const audioFiles = files.filter(file => file.endsWith('.mp3') || file.endsWith('.wav'));
 
-        // Lorsque le fichier audio est terminé, on peut en envoyer un autre
-        stream.on('end', () => {
-            const nextAudioFile = getRandomAudioFile();
-            const nextStream = fs.createReadStream(nextAudioFile);
-            nextStream.pipe(res);
+            if (audioFiles.length === 0) {
+                res.writeHead(404);
+                res.end('Aucun fichier audio trouvé');
+                return;
+            }
+
+            // Choisir un fichier aléatoirement
+            const randomFile = audioFiles[Math.floor(Math.random() * audioFiles.length)];
+            const filePath = path.join(audioDir, randomFile);
+
+            // Diffuser le fichier choisi
+            res.writeHead(200, { 'Content-Type': 'audio/mpeg' });
+            const readStream = fs.createReadStream(filePath);
+            readStream.pipe(res);
         });
-
     } else {
         res.writeHead(404);
         res.end('404 Not Found');
     }
-});
-
-// WebSocket pour gérer la diffusion audio si nécessaire (non utilisé ici)
-const wss = new WebSocket.Server({ server });
-
-wss.on('connection', (ws) => {
-    console.log('Nouvelle connexion WebSocket');
 });
 
 server.listen(8000, () => {
