@@ -13,6 +13,33 @@ const server = http.createServer((req, res) => {
                 res.end(data);
             }
         });
+    } else if (req.url === '/stream') {
+        res.writeHead(200, { 'Content-Type': 'audio/mpeg' });
+
+        // Diffusion du flux audio
+        audioListeners.push(res);
+
+        req.on('close', () => {
+            audioListeners = audioListeners.filter(listener => listener !== res);
+        });
+    } else if (req.url === '/login') {
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk;
+        });
+
+        req.on('end', () => {
+            const { email, password } = JSON.parse(body);
+
+            // Vérification des identifiants
+            if (email === "mahe.ailliot@gmail.com" && password === "Mahe25892589") {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true }));
+            } else {
+                res.writeHead(401, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: false }));
+            }
+        });
     } else {
         res.writeHead(404);
         res.end('404 Not Found');
@@ -21,40 +48,18 @@ const server = http.createServer((req, res) => {
 
 // WebSocket pour gérer la diffusion audio
 const wss = new WebSocket.Server({ server });
-let broadcaster = null;
-let listeners = [];
+let audioListeners = [];
 
 wss.on('connection', (ws) => {
     ws.on('message', (message) => {
-        if (!broadcaster) {
-            // Si c'est le premier utilisateur qui envoie de l'audio, on le considère comme le diffuseur
-            broadcaster = ws;
-        }
-
-        if (ws === broadcaster) {
-            // Envoyer l'audio aux auditeurs
-            listeners.forEach(listener => {
-                if (listener.readyState === WebSocket.OPEN) {
-                    listener.send(message);
-                }
-            });
-        }
+        audioListeners.forEach(listener => {
+            listener.write(Buffer.from(message));
+        });
     });
 
     ws.on('close', () => {
-        if (ws === broadcaster) {
-            // Si le diffuseur se déconnecte, réinitialiser le diffuseur
-            broadcaster = null;
-        } else {
-            // Sinon, supprimer l'auditeur de la liste
-            listeners = listeners.filter(listener => listener !== ws);
-        }
+        console.log('Connexion WebSocket fermée');
     });
-
-    // Ajouter le client en tant qu'auditeur s'il n'est pas diffuseur
-    if (ws !== broadcaster) {
-        listeners.push(ws);
-    }
 });
 
 server.listen(8000, () => {
