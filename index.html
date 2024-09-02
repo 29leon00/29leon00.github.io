@@ -7,22 +7,107 @@
 </head>
 <body>
     <h1>Bienvenue sur la radio en ligne</h1>
+
+    <!-- Choix du fichier audio -->
+    <label for="audioSelect">Choisissez une piste :</label>
+    <select id="audioSelect" onchange="updateAudioSource()">
+        <!-- Options seront ajoutées dynamiquement -->
+    </select>
     
     <!-- Player Radio -->
-    <audio id="radioPlayer" controls autoplay>
-        <source id="audioSource" src="http://www.29leon00.github.io/stream" type="audio/mpeg">
+    <audio id="radioPlayer" controls>
+        <source id="audioSource" src="" type="audio/mpeg">
         Votre navigateur ne supporte pas l'élément audio.
     </audio>
     
-    <!-- Bouton pour lire un autre fichier audio aléatoire -->
-    <button onclick="playRandom()">Lire une autre chanson</button>
+    <!-- Formulaire de connexion -->
+    <div id="loginForm">
+        <h2>Connexion</h2>
+        <input type="email" id="email" placeholder="Email"><br>
+        <input type="password" id="password" placeholder="Mot de passe"><br>
+        <button onclick="login()">Se connecter</button>
+    </div>
+    
+    <!-- Interface pour diffuser (visible seulement pour l'utilisateur spécifique) -->
+    <div id="broadcastInterface" style="display: none;">
+        <h2>Interface de diffusion</h2>
+        <button onclick="startBroadcast()">Commencer la diffusion</button>
+        <button onclick="stopBroadcast()">Arrêter la diffusion</button>
+    </div>
 
     <script>
-        function playRandom() {
-            // Recharger la source audio pour lire un autre fichier aléatoire
-            const audioPlayer = document.getElementById('radioPlayer');
-            audioPlayer.src = 'http://votre-serveur.com/stream';
-            audioPlayer.play();
+        let stream;
+        let socket;
+
+        // Fonction de connexion
+        function login() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            // Vérification basique des identifiants
+            if (email === "mahe.ailliot@gmail.com" && password === "Mahe25892589") {
+                document.getElementById('broadcastInterface').style.display = 'block';
+                document.getElementById('loginForm').style.display = 'none';
+                loadAudioFiles();
+            } else {
+                alert('Email ou mot de passe incorrect');
+            }
+        }
+
+        // Fonction pour charger les fichiers audio
+        function loadAudioFiles() {
+            fetch('/audio')
+                .then(response => response.json())
+                .then(files => {
+                    const select = document.getElementById('audioSelect');
+                    files.forEach(file => {
+                        const option = document.createElement('option');
+                        option.value = file;
+                        option.textContent = file;
+                        select.appendChild(option);
+                    });
+                });
+        }
+
+        // Fonction pour mettre à jour la source audio
+        function updateAudioSource() {
+            const selectedFile = document.getElementById('audioSelect').value;
+            document.getElementById('audioSource').src = `http://votre-serveur.com/stream/${selectedFile}`;
+            document.getElementById('radioPlayer').load();
+        }
+
+        // Fonction pour commencer la diffusion
+        function startBroadcast() {
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(mediaStream => {
+                stream = mediaStream;
+                socket = new WebSocket('ws://votre-serveur.com:8000');
+
+                socket.onopen = function() {
+                    const audioContext = new AudioContext();
+                    const source = audioContext.createMediaStreamSource(stream);
+                    const processor = audioContext.createScriptProcessor(1024, 1, 1);
+
+                    processor.onaudioprocess = function(e) {
+                        if (socket.readyState === WebSocket.OPEN) {
+                            const audioData = e.inputBuffer.getChannelData(0);
+                            socket.send(audioData.buffer);
+                        }
+                    };
+
+                    source.connect(processor);
+                    processor.connect(audioContext.destination);
+                };
+            });
+        }
+
+        // Fonction pour arrêter la diffusion
+        function stopBroadcast() {
+            if (socket) {
+                socket.close();
+            }
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
         }
     </script>
 </body>
