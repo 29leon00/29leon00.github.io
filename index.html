@@ -10,7 +10,6 @@
     
     <!-- Player Radio -->
     <audio id="radioPlayer" controls>
-        <source id="audioSource" src="/random-audio" type="audio/mpeg">
         Votre navigateur ne supporte pas l'élément audio.
     </audio>
     
@@ -32,6 +31,7 @@
     <script>
         let stream;
         let socket;
+        const audioPlayer = document.getElementById("radioPlayer");
 
         // Fonction de connexion
         function login() {
@@ -46,6 +46,18 @@
                 alert('Email ou mot de passe incorrect');
             }
         }
+
+        // Charger un fichier audio aléatoire depuis le serveur
+        function loadRandomAudio() {
+            audioPlayer.src = 'http://votre-serveur.com/random-audio';
+            audioPlayer.play();
+        }
+
+        // Charger un nouveau fichier lorsque le précédent est terminé
+        audioPlayer.addEventListener('ended', loadRandomAudio);
+
+        // Charger le premier fichier lors du chargement de la page
+        window.onload = loadRandomAudio;
 
         // Fonction pour commencer la diffusion
         function startBroadcast() {
