@@ -1,9 +1,6 @@
 const http = require('http');
 const fs = require('fs');
-const path = require('path');
 const WebSocket = require('ws');
-
-const audioFolder = path.join(__dirname, 'audio');
 
 const server = http.createServer((req, res) => {
     if (req.url === '/') {
@@ -19,40 +16,11 @@ const server = http.createServer((req, res) => {
     } else if (req.url === '/stream') {
         res.writeHead(200, { 'Content-Type': 'audio/mpeg' });
 
-        // Liste des fichiers audio
-        fs.readdir(audioFolder, (err, files) => {
-            if (err) {
-                res.writeHead(500);
-                res.end('Erreur de lecture du dossier');
-                return;
-            }
+        // Diffusion du flux audio
+        audioListeners.push(res);
 
-            // Lire chaque fichier et les diffuser
-            let index = 0;
-
-            function streamFile() {
-                if (index >= files.length) {
-                    index = 0; // Recommencer à partir du début
-                }
-                const file = path.join(audioFolder, files[index]);
-                const fileStream = fs.createReadStream(file);
-
-                fileStream.on('data', chunk => {
-                    res.write(chunk);
-                });
-
-                fileStream.on('end', () => {
-                    index++;
-                    setImmediate(streamFile); // Lire le fichier suivant
-                });
-
-                fileStream.on('error', () => {
-                    res.writeHead(500);
-                    res.end('Erreur de lecture du fichier');
-                });
-            }
-
-            streamFile();
+        req.on('close', () => {
+            audioListeners = audioListeners.filter(listener => listener !== res);
         });
     } else if (req.url === '/login') {
         let body = '';
