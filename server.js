@@ -32,6 +32,18 @@ const server = http.createServer((req, res) => {
             res.writeHead(200, { 'Content-Type': 'audio/mpeg' });
             fs.createReadStream(filePath).pipe(res);
         });
+    } else if (req.url === '/audio') {
+        fs.readdir(AUDIO_DIR, (err, files) => {
+            if (err) {
+                res.writeHead(500);
+                res.end('Erreur serveur');
+                return;
+            }
+            // Filtre pour ne conserver que les fichiers mp3
+            const audioFiles = files.filter(file => path.extname(file) === '.mp3');
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(audioFiles));
+        });
     } else {
         res.writeHead(404);
         res.end('404 Not Found');
