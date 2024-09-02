@@ -9,10 +9,7 @@
     <h1>Bienvenue sur la radio en ligne</h1>
     
     <!-- Player Radio -->
-    <audio id="radioPlayer" controls>
-        <source id="audioSource" src="/audio/bob marley.mp3" type="audio/mpeg">
-        Votre navigateur ne supporte pas l'élément audio.
-    </audio>
+    <audio id="radioPlayer" controls autoplay></audio>
     
     <!-- Formulaire de connexion -->
     <div id="loginForm">
@@ -32,6 +29,9 @@
     <script>
         let stream;
         let socket;
+        let audioContext;
+        let source;
+        let processor;
 
         // Fonction de connexion
         function login() {
@@ -53,16 +53,15 @@
                 stream = mediaStream;
                 socket = new WebSocket('ws://votre-serveur.com:8000');
 
+                socket.binaryType = "arraybuffer";
                 socket.onopen = function() {
-                    const audioContext = new AudioContext();
-                    const source = audioContext.createMediaStreamSource(stream);
-                    const processor = audioContext.createScriptProcessor(1024, 1, 1);
+                    audioContext = new AudioContext();
+                    source = audioContext.createMediaStreamSource(stream);
+                    processor = audioContext.createScriptProcessor(1024, 1, 1);
 
                     processor.onaudioprocess = function(e) {
-                        if (socket.readyState === WebSocket.OPEN) {
-                            const audioData = e.inputBuffer.getChannelData(0);
-                            socket.send(audioData.buffer);
-                        }
+                        const audioData = e.inputBuffer.getChannelData(0);
+                        socket.send(audioData.buffer);
                     };
 
                     source.connect(processor);
@@ -79,7 +78,43 @@
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
             }
+            if (processor) {
+                processor.disconnect();
+            }
+            if (source) {
+                source.disconnect();
+            }
+            if (audioContext) {
+                audioContext.close();
+            }
         }
+
+        // Lecture audio pour les auditeurs
+        const audioPlayer = document.getElementById('radioPlayer');
+        const audioContextForPlayer = new AudioContext();
+        const scriptNode = audioContextForPlayer.createScriptProcessor(1024, 1, 1);
+        const destination = audioContextForPlayer.createMediaStreamDestination();
+        const mediaStream = destination.stream;
+        audioPlayer.srcObject = mediaStream;
+
+        let bufferQueue = [];
+
+        scriptNode.onaudioprocess = function(e) {
+            if (bufferQueue.length > 0) {
+                const inputBuffer = bufferQueue.shift();
+                const outputBuffer = e.outputBuffer.getChannelData(0);
+                outputBuffer.set(inputBuffer);
+            }
+        };
+
+        scriptNode.connect(audioContextForPlayer.destination);
+
+        const socketForPlayer = new WebSocket('ws:www.29leon00.github.io:8000');
+        socketForPlayer.binaryType = "arraybuffer";
+        socketForPlayer.onmessage = function(event) {
+            const floatArray = new Float32Array(event.data);
+            bufferQueue.push(floatArray);
+        };
     </script>
 </body>
 </html>
