@@ -1,77 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Object detector</title>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #000;
-        }
-
-#videoContainer {
-            position: relative;
-            width: 100%;
-            height: 70%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: black;
-            overflow: hidden;
-        }
-
-        video {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%;
-            height: 70%;
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: cover;
-        }
-
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        #switchCamera {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            padding: 10px 20px;
-            background-color: rgba(0, 0, 0, 0.5);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            z-index: 10;
-        }
-    </style>
+    <title>Radio en ligne</title>
 </head>
 <body>
-    <div id="videoContainer">
-        <video id="webcam" autoplay muted></video>
-        <canvas id="canvas"></canvas>
+    <h1>Bienvenue sur la radio en ligne</h1>
+    
+    <!-- Player Radio -->
+    <audio id="radioPlayer" controls>
+        <source id="audioSource" src="http://votre-serveur.com/stream" type="audio/mpeg">
+        Votre navigateur ne supporte pas l'élément audio.
+    </audio>
+    
+    <!-- Formulaire de connexion -->
+    <div id="loginForm">
+        <h2>Connexion</h2>
+        <input type="email" id="email" placeholder="Email"><br>
+        <input type="password" id="password" placeholder="Mot de passe"><br>
+        <button onclick="login()">Se connecter</button>
     </div>
-    <button id="switchCamera">Switch Camera</button>
+    
+    <!-- Interface pour diffuser (visible seulement pour l'utilisateur spécifique) -->
+    <div id="broadcastInterface" style="display: none;">
+        <h2>Interface de diffusion</h2>
+        <button onclick="startBroadcast()">Commencer la diffusion</button>
+        <button onclick="stopBroadcast()">Arrêter la diffusion</button>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
-    <script src="script.js"></script>
+    <script>
+        let stream;
+        let socket;
+
+        // Fonction de connexion
+        function login() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            // Vérification basique côté client
+            if (email === "mahe.ailliot@gmail.com" && password === "votreMotDePasse") {
+                document.getElementById('broadcastInterface').style.display = 'block';
+                document.getElementById('loginForm').style.display = 'none';
+            } else {
+                alert('Email ou mot de passe incorrect');
+            }
+        }
+
+        // Fonction pour commencer la diffusion
+        function startBroadcast() {
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(mediaStream => {
+                stream = mediaStream;
+                socket = new WebSocket('ws://votre-serveur.com:8000');
+
+                socket.onopen = function() {
+                    const audioContext = new AudioContext();
+                    const source = audioContext.createMediaStreamSource(stream);
+                    const processor = audioContext.createScriptProcessor(1024, 1, 1);
+
+                    processor.onaudioprocess = function(e) {
+                        if (socket.readyState === WebSocket.OPEN) {
+                            const audioData = e.inputBuffer.getChannelData(0);
+                            socket.send(audioData.buffer);
+                        }
+                    };
+
+                    source.connect(processor);
+                    processor.connect(audioContext.destination);
+                };
+            });
+        }
+
+        // Fonction pour arrêter la diffusion
+        function stopBroadcast() {
+            if (socket) {
+                socket.close();
+            }
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        }
+    </script>
 </body>
 </html>
