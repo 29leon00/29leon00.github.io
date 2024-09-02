@@ -7,16 +7,10 @@
 </head>
 <body>
     <h1>Bienvenue sur la radio en ligne</h1>
-
-    <!-- Choix du fichier audio -->
-    <label for="audioSelect">Choisissez une piste :</label>
-    <select id="audioSelect" onchange="updateAudioSource()">
-        <!-- Options seront ajoutées dynamiquement -->
-    </select>
     
     <!-- Player Radio -->
     <audio id="radioPlayer" controls>
-        <source id="audioSource" src="" type="audio/mpeg">
+        <source id="audioSource" src="http://votre-serveur.com/stream" type="audio/mpeg">
         Votre navigateur ne supporte pas l'élément audio.
     </audio>
     
@@ -44,36 +38,23 @@
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
 
-            // Vérification basique des identifiants
-            if (email === "mahe.ailliot@gmail.com" && password === "Mahe25892589") {
-                document.getElementById('broadcastInterface').style.display = 'block';
-                document.getElementById('loginForm').style.display = 'none';
-                loadAudioFiles();
-            } else {
-                alert('Email ou mot de passe incorrect');
-            }
-        }
-
-        // Fonction pour charger les fichiers audio
-        function loadAudioFiles() {
-            fetch('/audio')
-                .then(response => response.json())
-                .then(files => {
-                    const select = document.getElementById('audioSelect');
-                    files.forEach(file => {
-                        const option = document.createElement('option');
-                        option.value = file;
-                        option.textContent = file;
-                        select.appendChild(option);
-                    });
-                });
-        }
-
-        // Fonction pour mettre à jour la source audio
-        function updateAudioSource() {
-            const selectedFile = document.getElementById('audioSelect').value;
-            document.getElementById('audioSource').src = `http://votre-serveur.com/stream/${selectedFile}`;
-            document.getElementById('radioPlayer').load();
+            // Envoie les données de connexion au serveur
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && email === "mahe.ailliot@gmail.com") {
+                    document.getElementById('broadcastInterface').style.display = 'block';
+                    document.getElementById('loginForm').style.display = 'none';
+                } else {
+                    alert('Email ou mot de passe incorrect');
+                }
+            });
         }
 
         // Fonction pour commencer la diffusion
