@@ -1,6 +1,31 @@
 const http = require('http');
 const fs = require('fs');
+const path = require('path');
 const WebSocket = require('ws');
+
+const audioDir = path.join(__dirname, 'audio');
+
+// Fonction pour choisir un fichier audio aléatoire
+function getRandomAudioFile(callback) {
+    fs.readdir(audioDir, (err, files) => {
+        if (err) {
+            callback(err, null);
+            return;
+        }
+
+        // Filtrer pour ne garder que les fichiers audio (par exemple .mp3)
+        const audioFiles = files.filter(file => file.endsWith('.mp3'));
+
+        if (audioFiles.length === 0) {
+            callback(new Error('Aucun fichier audio trouvé'), null);
+            return;
+        }
+
+        // Sélectionner un fichier aléatoire
+        const randomFile = audioFiles[Math.floor(Math.random() * audioFiles.length)];
+        callback(null, path.join(audioDir, randomFile));
+    });
+}
 
 const server = http.createServer((req, res) => {
     if (req.url === '/') {
@@ -13,32 +38,24 @@ const server = http.createServer((req, res) => {
                 res.end(data);
             }
         });
-    } else if (req.url === '/stream') {
-        res.writeHead(200, { 'Content-Type': 'audio/mpeg' });
-
-        // Diffusion du flux audio
-        audioListeners.push(res);
-
-        req.on('close', () => {
-            audioListeners = audioListeners.filter(listener => listener !== res);
-        });
-    } else if (req.url === '/login') {
-        let body = '';
-        req.on('data', chunk => {
-            body += chunk;
-        });
-
-        req.on('end', () => {
-            const { email, password } = JSON.parse(body);
-
-            // Vérification des identifiants
-            if (email === "mahe.ailliot@gmail.com" && password === "Mahe25892589") {
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ success: true }));
-            } else {
-                res.writeHead(401, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ success: false }));
+    } else if (req.url === '/random-audio') {
+        getRandomAudioFile((err, filePath) => {
+            if (err) {
+                res.writeHead(500);
+                res.end('Erreur serveur: ' + err.message);
+                return;
             }
+
+            fs.readFile(filePath, (err, data) => {
+                if (err) {
+                    res.writeHead(500);
+                    res.end('Erreur lors de la lecture du fichier audio');
+                    return;
+                }
+
+                res.writeHead(200, { 'Content-Type': 'audio/mpeg' });
+                res.end(data);
+            });
         });
     } else {
         res.writeHead(404);
