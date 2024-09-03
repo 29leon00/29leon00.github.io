@@ -10,7 +10,7 @@
     
     <!-- Player Radio -->
     <audio id="radioPlayer" controls>
-        <source id="audioSource" src="/audio/bob marley.mp3" type="audio/mpeg">
+        <source id="audioSource" src="http://votre-serveur.com/stream" type="audio/mpeg">
         Votre navigateur ne supporte pas l'élément audio.
     </audio>
     
@@ -33,18 +33,69 @@
         let stream;
         let socket;
 
+        // Fonction pour définir un cookie
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+
+        // Fonction pour récupérer un cookie
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for(let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
         // Fonction de connexion
         function login() {
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
 
-            // Vérification basique des identifiants
-            if (email === "mahe.ailliot@gmail.com" && password === "Mahe25892589") {
+            // Vérification des identifiants pour deux comptes
+            if ((email === "mahe.ailliot@gmail.com" && password === "Mahe25892589") || 
+                (email === "louise.ailliot@gmail.com" && password === "Motdepasse01")) {
+                // Enregistrer les informations de connexion dans les cookies
+                setCookie("email", email, 7);  // Le cookie expire dans 7 jours
+                setCookie("isLoggedIn", true, 7);
+
                 document.getElementById('broadcastInterface').style.display = 'block';
                 document.getElementById('loginForm').style.display = 'none';
             } else {
                 alert('Email ou mot de passe incorrect');
             }
+        }
+
+        // Vérifier si l'utilisateur est déjà connecté grâce aux cookies
+        function checkLogin() {
+            const isLoggedIn = getCookie("isLoggedIn");
+            const email = getCookie("email");
+
+            if (isLoggedIn && (email === "mahe.ailliot@gmail.com" || email === "louise.ailliot@gmail.com")) {
+                document.getElementById('broadcastInterface').style.display = 'block';
+                document.getElementById('loginForm').style.display = 'none';
+
+                // Reprendre la lecture du morceau à partir de la position sauvegardée
+                const savedPosition = getCookie("audioPosition");
+                if (savedPosition) {
+                    document.getElementById("radioPlayer").currentTime = parseFloat(savedPosition);
+                }
+            }
+        }
+
+        // Sauvegarder la position du morceau dans les cookies
+        function saveAudioPosition() {
+            const audioPlayer = document.getElementById("radioPlayer");
+            setCookie("audioPosition", audioPlayer.currentTime, 7);
         }
 
         // Fonction pour commencer la diffusion
@@ -80,6 +131,13 @@
                 stream.getTracks().forEach(track => track.stop());
             }
         }
+
+        // Sauvegarder la position du morceau lorsque l'utilisateur quitte ou recharge la page
+        window.addEventListener("beforeunload", saveAudioPosition);
+
+        // Vérifier la connexion au chargement de la page
+        window.onload = checkLogin;
     </script>
 </body>
 </html>
+k
