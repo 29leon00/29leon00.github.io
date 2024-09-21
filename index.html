@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capteurs de Mouvement et d'Orientation</title>
+    <title>Boussole et Vitesse</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -16,7 +16,7 @@
             height: 100vh;
             text-align: center;
         }
-        
+
         .container {
             background-color: #fff;
             border-radius: 15px;
@@ -79,37 +79,49 @@
         .hidden {
             display: none;
         }
+
+        .compass {
+            margin-top: 20px;
+            width: 150px;
+            height: 150px;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/3/33/Compass_Card.png');
+            background-size: cover;
+            position: relative;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .compass-arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 40px solid red;
+            left: 50%;
+            top: 10px;
+            transform: translateX(-50%);
+        }
+
+        #speed {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Capteurs de Mouvement et Orientation</h1>
+        <h1>Boussole et Vitesse</h1>
 
-        <div class="sensor-data">
-            <p>Accélération X :</p>
-            <div class="circle" id="accel-x">0</div>
+        <div class="compass">
+            <div class="compass-arrow" id="compass-arrow"></div>
         </div>
-        <div class="sensor-data">
-            <p>Accélération Y :</p>
-            <div class="circle" id="accel-y">0</div>
-        </div>
-        <div class="sensor-data">
-            <p>Accélération Z :</p>
-            <div class="circle" id="accel-z">0</div>
-        </div>
-
-        <div class="sensor-data">
-            <p>Alpha :</p>
-            <div class="circle" id="alpha">0</div>
-        </div>
-        <div class="sensor-data">
-            <p>Beta :</p>
-            <div class="circle" id="beta">0</div>
-        </div>
-        <div class="sensor-data">
-            <p>Gamma :</p>
-            <div class="circle" id="gamma">0</div>
+        
+        <div id="speed" class="sensor-data">
+            <p>Vitesse :</p>
+            <div>
+                <span id="speed-kmh">0</span> km/h | <span id="speed-knots">0</span> nœuds
+            </div>
         </div>
 
         <button onclick="startSensors()">Activer les Capteurs</button>
