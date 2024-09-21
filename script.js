@@ -8,17 +8,31 @@ function startSensors() {
 
 // Boussole : Activer la détection de l'orientation
 function startCompass() {
-    if (window.DeviceOrientationEvent) {
-        window.addEventListener('deviceorientation', (event) => {
-            if (event.alpha !== null) {
-                let compassArrow = document.getElementById('compass-arrow');
-                // Rotation selon l'alpha (direction)
-                let rotation = 360 - event.alpha; // Inverser la rotation pour faire correspondre à la boussole
-                compassArrow.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
-            }
-        });
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        // Demander la permission pour les appareils iOS
+        DeviceOrientationEvent.requestPermission()
+            .then(permissionState => {
+                if (permissionState === 'granted') {
+                    window.addEventListener('deviceorientation', handleOrientation, true);
+                } else {
+                    alert('Permission refusée pour accéder aux capteurs de mouvement.');
+                }
+            })
+            .catch(console.error);
     } else {
-        alert('Votre appareil ne supporte pas les capteurs d\'orientation.');
+        // Pour les navigateurs qui n'ont pas besoin de permission
+        window.addEventListener('deviceorientation', handleOrientation, true);
+    }
+}
+
+// Gestion de l'orientation pour la boussole
+function handleOrientation(event) {
+    if (event.alpha !== null) {
+        let compassArrow = document.getElementById('compass-arrow');
+        let rotation = 360 - event.alpha;  // Inverser la rotation pour correspondre à la boussole
+        compassArrow.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+    } else {
+        alert('Orientation non supportée.');
     }
 }
 
