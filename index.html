@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capteurs de Mouvement et d'Orientation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        #motion-data, #orientation-data {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <h1>Capteurs de Mouvement et d'Orientation</h1>
+    <div id="motion-data">
+        <h2>Mouvement :</h2>
+        <p><strong>Accélération X :</strong> <span id="accel-x">0</span></p>
+        <p><strong>Accélération Y :</strong> <span id="accel-y">0</span></p>
+        <p><strong>Accélération Z :</strong> <span id="accel-z">0</span></p>
+    </div>
+
+    <div id="orientation-data">
+        <h2>Orientation :</h2>
+        <p><strong>Alpha :</strong> <span id="alpha">0</span></p>
+        <p><strong>Beta :</strong> <span id="beta">0</span></p>
+        <p><strong>Gamma :</strong> <span id="gamma">0</span></p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
