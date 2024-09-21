@@ -29,8 +29,9 @@ function startCompass() {
 function handleOrientation(event) {
     if (event.alpha !== null) {
         let compassArrow = document.getElementById('compass-arrow');
-        let rotation = 360 - event.alpha;  // Inverser la rotation pour correspondre à la boussole
-        compassArrow.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+        // Nous utilisons 360 - alpha pour orienter correctement la boussole
+        let rotation = 360 - event.alpha; 
+        compassArrow.style.transform = `rotate(${rotation}deg)`;
     } else {
         alert('Orientation non supportée.');
     }
