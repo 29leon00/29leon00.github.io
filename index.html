@@ -76,19 +76,16 @@
             background-color: #45a049;
         }
 
-        .hidden {
-            display: none;
-        }
-
-        .compass {
-            margin-top: 20px;
+        .compass-container {
+            position: relative;
             width: 150px;
             height: 150px;
-            background-image: url('https://upload.wikimedia.org/wikipedia/commons/3/33/Compass_Card.png');
-            background-size: cover;
-            position: relative;
-            margin-left: auto;
-            margin-right: auto;
+            margin: 0 auto;
+            border: 2px solid #333;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .compass-arrow {
@@ -98,9 +95,38 @@
             border-left: 10px solid transparent;
             border-right: 10px solid transparent;
             border-bottom: 40px solid red;
-            left: 50%;
+            transform-origin: 50% 80%; /* Le point de rotation */
+        }
+
+        .compass-label {
+            position: absolute;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .north {
             top: 10px;
+            left: 50%;
             transform: translateX(-50%);
+        }
+
+        .south {
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .east {
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .west {
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
         }
 
         #speed {
@@ -113,8 +139,12 @@
     <div class="container">
         <h1>Boussole et Vitesse</h1>
 
-        <div class="compass">
+        <div class="compass-container">
             <div class="compass-arrow" id="compass-arrow"></div>
+            <div class="compass-label north">N</div>
+            <div class="compass-label south">S</div>
+            <div class="compass-label east">E</div>
+            <div class="compass-label west">O</div>
         </div>
         
         <div id="speed" class="sensor-data">
