@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compteur d'Argent avec Comptes et Mot de Passe</title>
+    <title>Compteur d'Argent avec Stockage Serveur</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,7 +35,7 @@
 
         .login-box, .create-account-box {
             margin-bottom: 30px;
-            display: none; /* Masqué par défaut */
+            display: none;
         }
 
         input {
@@ -55,7 +55,7 @@
             right: 20px;
             font-size: 1.2em;
             padding: 10px 20px;
-            background-color: #1e90ff; /* Bleu */
+            background-color: #1e90ff;
             color: white;
             border: none;
             border-radius: 5px;
@@ -69,7 +69,7 @@
 </head>
 <body>
 
-    <h1>Compteur d'Argent avec Comptes et Mot de Passe</h1>
+    <h1>Compteur d'Argent avec Comptes et Stockage Serveur</h1>
 
     <!-- Bouton pour afficher/masquer la gestion des comptes -->
     <button id="account-button" onclick="toggleAccountManagement()">Gérer le compte</button>
@@ -131,26 +131,28 @@
             const newPassword = document.getElementById("new-password").value;
             const createError = document.getElementById("create-error");
 
-            // Vérifier si le nom d'utilisateur et le mot de passe sont bien remplis
             if (newUsername === "" || newPassword === "") {
                 createError.innerText = "Veuillez entrer un nom d'utilisateur et un mot de passe.";
                 return;
             }
 
-            // Vérifier si le compte existe déjà
-            if (localStorage.getItem(newUsername)) {
-                createError.innerText = "Le nom d'utilisateur existe déjà.";
-            } else {
-                // Créer un compte sous forme d'objet avec le mot de passe et le montant
-                const accountData = {
-                    password: newPassword,
-                    balance: 0
-                };
-                localStorage.setItem(newUsername, JSON.stringify(accountData));
-                createError.innerText = "Compte créé avec succès. Vous pouvez maintenant vous connecter.";
-                document.getElementById("new-username").value = "";
-                document.getElementById("new-password").value = "";
-            }
+            fetch('server.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'create',
+                    username: newUsername,
+                    password: newPassword
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    createError.innerText = "Compte créé avec succès.";
+                } else {
+                    createError.innerText = data.message;
+                }
+            });
         }
 
         // Fonction de connexion
@@ -159,44 +161,51 @@
             const password = document.getElementById("password").value;
             const loginError = document.getElementById("login-error");
 
-            // Vérifier si le compte existe
-            const accountData = JSON.parse(localStorage.getItem(username));
-            if (accountData) {
-                // Vérifier si le mot de passe est correct
-                if (accountData.password === password) {
+            fetch('server.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'login',
+                    username: username,
+                    password: password
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
                     currentUser = username;
+                    counter = data.balance;
+                    updateCounter();
                     document.getElementById("current-user").innerText = username;
                     document.getElementById("user-section").style.display = "block";
                     document.querySelector(".login-box").style.display = "none";
                     document.querySelector(".create-account-box").style.display = "none";
                     loginError.innerText = "";
-
-                    // Charger le montant sauvegardé pour cet utilisateur
-                    counter = accountData.balance;
-                    updateCounter();
                 } else {
-                    loginError.innerText = "Mot de passe incorrect.";
+                    loginError.innerText = data.message;
                 }
-            } else {
-                loginError.innerText = "Le compte n'existe pas. Veuillez créer un compte.";
-            }
+            });
         }
 
         // Fonction de déconnexion
         function logout() {
-            // Sauvegarder le solde avant la déconnexion
-            const accountData = JSON.parse(localStorage.getItem(currentUser));
-            accountData.balance = counter;
-            localStorage.setItem(currentUser, JSON.stringify(accountData));
-
-            currentUser = null;
-            counter = 0;
-            document.getElementById("counter").innerText = "0 €";
-            document.getElementById("user-section").style.display = "none";
-            document.querySelector(".login-box").style.display = "block";
-            document.querySelector(".create-account-box").style.display = "block";
-            document.getElementById("username").value = "";
-            document.getElementById("password").value = "";
+            fetch('server.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'logout',
+                    username: currentUser,
+                    balance: counter
+                })
+            })
+            .then(() => {
+                currentUser = null;
+                counter = 0;
+                document.getElementById("counter").innerText = "0 €";
+                document.getElementById("user-section").style.display = "none";
+                document.querySelector(".login-box").style.display = "block";
+                document.querySelector(".create-account-box").style.display = "block";
+            });
         }
 
         // Ajouter un montant au compteur
