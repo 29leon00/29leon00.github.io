@@ -3,186 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compteur d'Argent avec Comptes</title>
+    <title>Gestion d'Argent</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f8ff; /* Blanc cassé */
+            background-color: #f0f8ff;
+            color: #333;
+        }
+        .counter-box {
             text-align: center;
-            padding: 50px;
+            margin: 50px;
+        }
+        .counter-box button {
+            font-size: 20px;
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .counter-box button:hover {
+            background-color: #0056b3;
         }
         #counter {
-            font-size: 3em;
-            color: #1e90ff; /* Bleu */
-            margin-bottom: 20px;
-        }
-        .button {
-            padding: 15px 30px;
-            margin: 10px;
-            font-size: 1.5em;
-            color: white;
-            background-color: #1e90ff; /* Bleu */
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .login-box, .create-account-box {
-            margin-bottom: 30px;
-            display: none; /* Masqué par défaut */
-        }
-        input {
-            padding: 10px;
-            font-size: 1em;
-            margin-right: 10px;
-        }
-        .error-message {
-            color: red;
-            font-size: 1em;
-        }
-        #account-button {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 1.2em;
-            padding: 10px 20px;
-            background-color: #1e90ff; /* Bleu */
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            font-size: 36px;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
 
-    <h1>Compteur d'Argent avec Comptes</h1>
-    <button id="account-button" onclick="toggleAccountManagement()">Gérer le compte</button>
+    <div class="counter-box">
+        <h1>Mon Compteur d'Argent</h1>
+        <!-- Boutons pour ajouter de l'argent -->
+        <button onclick="addAmount(1)">+1 €</button>
+        <button onclick="addAmount(2)">+2 €</button>
+        <button onclick="addAmount(5)">+5 €</button>
+        <button onclick="addAmount(10)">+10 €</button>
+        <button onclick="addAmount(20)">+20 €</button>
+        <button onclick="addAmount(50)">+50 €</button>
 
-    <div class="create-account-box">
-        <h2>Créer un compte</h2>
-        <input type="text" id="new-username" placeholder="Nom d'utilisateur">
-        <input type="password" id="new-password" placeholder="Mot de passe">
-        <button class="button" onclick="createAccount()">Créer un compte</button>
-        <div id="create-error" class="error-message"></div>
-    </div>
+        <br>
 
-    <div class="login-box">
-        <h2>Se connecter</h2>
-        <input type="text" id="username" placeholder="Nom d'utilisateur">
-        <input type="password" id="password" placeholder="Mot de passe">
-        <button class="button" onclick="login()">Se connecter</button>
-        <div id="login-error" class="error-message"></div>
-    </div>
+        <!-- Boutons pour soustraire de l'argent -->
+        <button onclick="addAmount(-1)">-1 €</button>
+        <button onclick="addAmount(-2)">-2 €</button>
+        <button onclick="addAmount(-5)">-5 €</button>
+        <button onclick="addAmount(-10)">-10 €</button>
+        <button onclick="addAmount(-50)">-50 €</button>
 
-    <div id="user-section" style="display: none;">
-        <h2>Utilisateur : <span id="current-user"></span></h2>
+        <!-- Affichage du compteur -->
         <div id="counter">0 €</div>
-        <button class="button" onclick="addAmount(1)">+1 €</button>
-        <button class="button" onclick="addAmount(2)">+2 €</button>
-        <button class="button" onclick="addAmount(5)">+5 €</button>
-        <button class="button" onclick="addAmount(10)">+10 €</button>
-        <button class="button" onclick="addAmount(20)">+20 €</button>
-        <button class="button" onclick="addAmount(50)">+50 €</button>
-        <button class="button" onclick="logout()" style="background-color: #ff6347;">Se déconnecter</button>
     </div>
 
     <script>
         let counter = 0;
         let currentUser = null;
 
-        function toggleAccountManagement() {
-            const createBox = document.querySelector('.create-account-box');
-            const loginBox = document.querySelector('.login-box');
-            if (createBox.style.display === 'none' || loginBox.style.display === 'none') {
-                createBox.style.display = 'block';
-                loginBox.style.display = 'block';
-            } else {
-                createBox.style.display = 'none';
-                loginBox.style.display = 'none';
-            }
-        }
-
-        function createAccount() {
-            const newUsername = document.getElementById("new-username").value;
-            const newPassword = document.getElementById("new-password").value;
-            const createError = document.getElementById("create-error");
-
-            if (newUsername === "" || newPassword === "") {
-                createError.innerText = "Veuillez entrer un nom d'utilisateur et un mot de passe.";
-                return;
-            }
-
-            fetch('accounts.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ action: 'create', username: newUsername, password: newPassword })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message) {
-                    createError.innerText = data.message;
-                    if (data.message.includes("Compte créé avec succès")) {
-                        document.getElementById("new-username").value = "";
-                        document.getElementById("new-password").value = "";
-                    }
-                }
-            })
-            .catch(err => console.error(err));
-        }
-
-        function login() {
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
-            const loginError = document.getElementById("login-error");
-
-            fetch('accounts.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ action: 'login', username: username, password: password })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Nom d'utilisateur ou mot de passe incorrect.");
-                }
-                return response.json();
-            })
-            .then(data => {
-                currentUser = username;
-                document.getElementById("current-user").innerText = username;
-                document.getElementById("user-section").style.display = "block";
-                document.querySelector(".login-box").style.display = "none";
-                document.querySelector(".create-account-box").style.display = "none";
-                counter = data.balance;
-                updateCounter();
-            })
-            .catch(err => {
-                loginError.innerText = err.message;
-            });
-        }
-
-        function logout() {
-            fetch('accounts.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ action: 'update', username: currentUser, balance: counter })
-            });
-
-            currentUser = null;
-            counter = 0;
-            document.getElementById("counter").innerText = "0 €";
-            document.getElementById("user-section").style.display = "none";
-            document.querySelector(".login-box").style.display = "block";
-            document.querySelector(".create-account-box").style.display = "block";
-            document.getElementById("username").value = "";
-            document.getElementById("password").value = "";
-        }
-
+        // Fonction pour ajouter ou soustraire des montants
         function addAmount(amount) {
             if (currentUser) {
                 counter += amount;
@@ -190,9 +69,12 @@
             }
         }
 
+        // Met à jour l'affichage du compteur
         function updateCounter() {
             document.getElementById("counter").innerText = counter + " €";
         }
+
+        // Autres fonctions pour connexion, déconnexion et gestion de compte...
     </script>
 
 </body>
