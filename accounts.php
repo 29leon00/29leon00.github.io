@@ -1,60 +1,74 @@
 <?php
-$filename = 'accounts.json';
+// Liste des comptes stockés directement dans le fichier PHP
+$accounts = [
+    '29leon00' => [
+        'password' => 'Mahe25892589',
+        'balance' => 0
+    ],
+    'exampleUser' => [
+        'password' => 'examplePass',
+        'balance' => 100
+    ]
+];
 
-// Récupérer les données des comptes
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    if (file_exists($filename)) {
-        echo file_get_contents($filename);
-    } else {
-        echo json_encode([]);
-    }
+// Créer une fonction pour sauvegarder les comptes dans le fichier PHP
+function saveAccounts($accounts) {
+    $accountsString = var_export($accounts, true);
+    $phpCode = "<?php\n\$accounts = $accountsString;\n?>";
+    file_put_contents(__FILE__, $phpCode);
 }
 
-// Créer ou mettre à jour un compte
+// Authentification et gestion du solde
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
-    $accounts = [];
 
-    if (file_exists($filename)) {
-        $accounts = json_decode(file_get_contents($filename), true);
-    }
-
-    // Vérifier si c'est une création de compte
-    if (isset($data['action']) && $data['action'] === 'create') {
-        if (isset($accounts[$data['username']])) {
-            http_response_code(400);
-            echo json_encode(['message' => 'Le nom d\'utilisateur existe déjà.']);
-            exit;
-        }
-        $accounts[$data['username']] = [
-            'password' => $data['password'],
-            'balance' => 0
-        ];
-        file_put_contents($filename, json_encode($accounts));
-        echo json_encode(['message' => 'Compte créé avec succès.']);
-        exit;
-    }
-
-    // Authentifier l'utilisateur
+    // Connexion
     if (isset($data['action']) && $data['action'] === 'login') {
-        if (isset($accounts[$data['username']]) && $accounts[$data['username']]['password'] === $data['password']) {
-            echo json_encode(['balance' => $accounts[$data['username']]['balance']]);
-            exit;
+        $username = $data['username'];
+        $password = $data['password'];
+
+        if (isset($accounts[$username]) && $accounts[$username]['password'] === $password) {
+            echo json_encode(['balance' => $accounts[$username]['balance']]);
         } else {
             http_response_code(400);
             echo json_encode(['message' => 'Nom d\'utilisateur ou mot de passe incorrect.']);
-            exit;
         }
+        exit;
     }
 
-    // Mettre à jour le solde
+    // Mise à jour du solde
     if (isset($data['action']) && $data['action'] === 'update') {
-        if (isset($accounts[$data['username']])) {
-            $accounts[$data['username']]['balance'] = $data['balance'];
-            file_put_contents($filename, json_encode($accounts));
+        $username = $data['username'];
+        $balance = $data['balance'];
+
+        if (isset($accounts[$username])) {
+            $accounts[$username]['balance'] = $balance;
+            saveAccounts($accounts);  // Sauvegarder les modifications
             echo json_encode(['message' => 'Solde mis à jour.']);
-            exit;
+        } else {
+            http_response_code(400);
+            echo json_encode(['message' => 'Utilisateur non trouvé.']);
         }
+        exit;
+    }
+
+    // Création de compte
+    if (isset($data['action']) && $data['action'] === 'create') {
+        $username = $data['username'];
+        $password = $data['password'];
+
+        if (isset($accounts[$username])) {
+            http_response_code(400);
+            echo json_encode(['message' => 'Le nom d\'utilisateur existe déjà.']);
+        } else {
+            $accounts[$username] = [
+                'password' => $password,
+                'balance' => 0
+            ];
+            saveAccounts($accounts);  // Sauvegarder le nouveau compte
+            echo json_encode(['message' => 'Compte créé avec succès.']);
+        }
+        exit;
     }
 }
 ?>
