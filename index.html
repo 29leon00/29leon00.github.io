@@ -3,174 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boussole, Vitesse et Niveau à Bulle</title>
+    <title>Compteur d'Argent avec Comptes et Mot de Passe</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f0f4f8;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff; /* Blanc cassé */
             text-align: center;
+            padding: 50px;
         }
 
-        .container {
-            background-color: #fff;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            max-width: 400px;
-            width: 90%;
-        }
-
-        h1 {
-            font-size: 1.8em;
-            color: #333;
+        #counter {
+            font-size: 3em;
+            color: #1e90ff; /* Bleu */
             margin-bottom: 20px;
         }
 
-        .sensor-data {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 10px 0;
-            padding: 10px;
-            background-color: #eef;
-            border-radius: 10px;
-        }
-
-        button {
-            background-color: #4caf50;
+        .button {
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 1.5em;
             color: white;
-            padding: 10px 20px;
-            font-size: 1em;
+            background-color: #1e90ff; /* Bleu */
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 20px;
         }
 
-        button:hover {
-            background-color: #45a049;
+        .button:hover {
+            background-color: #4682b4; /* Bleu plus foncé */
         }
 
-        .compass-container {
-            position: relative;
-            width: 150px;
-            height: 150px;
-            margin: 0 auto;
-            border: 2px solid #333;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .login-box, .create-account-box {
+            margin-bottom: 30px;
+            display: none; /* Masqué par défaut */
         }
 
-        .compass-arrow {
+        input {
+            padding: 10px;
+            font-size: 1em;
+            margin-right: 10px;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 1em;
+        }
+
+        #account-button {
             position: absolute;
-            width: 0;
-            height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-bottom: 40px solid red;
-            /* Correction du centrage */
-            transform-origin: 50% 50%;
-        }
-
-        .compass-label {
-            position: absolute;
+            top: 20px;
+            right: 20px;
             font-size: 1.2em;
-            font-weight: bold;
-            color: #333;
+            padding: 10px 20px;
+            background-color: #1e90ff; /* Bleu */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
 
-        .north {
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .south {
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .east {
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .west {
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        #speed {
-            margin-top: 20px;
-        }
-
-        /* Niveau à bulle */
-        .bubble-level-container {
-            position: relative;
-            width: 200px;
-            height: 200px;
-            margin: 20px auto;
-            border: 4px solid #333;
-            border-radius: 10px;
-            background-color: #f5f5f5;
-        }
-
-        .bubble {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            background-color: rgba(0, 200, 255, 0.8);
-            border-radius: 50%;
-            border: 2px solid #333;
-            top: calc(50% - 20px);
-            left: calc(50% - 20px);
-            transition: top 0.1s ease, left 0.1s ease;
+        #account-button:hover {
+            background-color: #4682b4;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Boussole, Vitesse et Niveau à Bulle</h1>
+    <h1>Compteur d'Argent avec Comptes et Mot de Passe</h1>
 
-        <!-- Boussole -->
-        <div class="compass-container">
-            <div class="compass-arrow" id="compass-arrow"></div>
-            <div class="compass-label north">N</div>
-            <div class="compass-label south">S</div>
-            <div class="compass-label east">E</div>
-            <div class="compass-label west">O</div>
-        </div>
+    <!-- Bouton pour afficher/masquer la gestion des comptes -->
+    <button id="account-button" onclick="toggleAccountManagement()">Gérer le compte</button>
 
-        <!-- Vitesse -->
-        <div id="speed" class="sensor-data">
-            <p>Vitesse :</p>
-            <div>
-                <span id="speed-kmh">0</span> km/h | <span id="speed-knots">0</span> nœuds
-            </div>
-        </div>
-
-        <!-- Niveau à Bulle -->
-        <div class="bubble-level-container">
-            <div class="bubble" id="bubble"></div>
-        </div>
-
-        <button onclick="startSensors()">Activer les Capteurs</button>
+    <!-- Formulaire de création de compte -->
+    <div class="create-account-box">
+        <h2>Créer un compte</h2>
+        <input type="text" id="new-username" placeholder="Nom d'utilisateur">
+        <input type="password" id="new-password" placeholder="Mot de passe">
+        <button class="button" onclick="createAccount()">Créer un compte</button>
+        <div id="create-error" class="error-message"></div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Formulaire de connexion -->
+    <div class="login-box">
+        <h2>Se connecter</h2>
+        <input type="text" id="username" placeholder="Nom d'utilisateur">
+        <input type="password" id="password" placeholder="Mot de passe">
+        <button class="button" onclick="login()">Se connecter</button>
+        <div id="login-error" class="error-message"></div>
+    </div>
+
+    <!-- Section utilisateur -->
+    <div id="user-section" style="display: none;">
+        <h2>Utilisateur : <span id="current-user"></span></h2>
+        <div id="counter">0 €</div>
+
+        <button class="button" onclick="addAmount(1)">+1 €</button>
+        <button class="button" onclick="addAmount(2)">+2 €</button>
+        <button class="button" onclick="addAmount(5)">+5 €</button>
+        <button class="button" onclick="addAmount(10)">+10 €</button>
+        <button class="button" onclick="addAmount(20)">+20 €</button>
+        <button class="button" onclick="addAmount(50)">+50 €</button>
+
+        <button class="button" onclick="logout()" style="background-color: #ff6347;">Se déconnecter</button>
+    </div>
+
+    <script>
+        let counter = 0;
+        let currentUser = null;
+
+        // Fonction pour afficher/masquer la gestion des comptes
+        function toggleAccountManagement() {
+            const createBox = document.querySelector('.create-account-box');
+            const loginBox = document.querySelector('.login-box');
+
+            if (createBox.style.display === 'none' || loginBox.style.display === 'none') {
+                createBox.style.display = 'block';
+                loginBox.style.display = 'block';
+            } else {
+                createBox.style.display = 'none';
+                loginBox.style.display = 'none';
+            }
+        }
+
+        // Fonction pour créer un compte
+        function createAccount() {
+            const newUsername = document.getElementById("new-username").value;
+            const newPassword = document.getElementById("new-password").value;
+            const createError = document.getElementById("create-error");
+
+            // Vérifier si le nom d'utilisateur et le mot de passe sont bien remplis
+            if (newUsername === "" || newPassword === "") {
+                createError.innerText = "Veuillez entrer un nom d'utilisateur et un mot de passe.";
+                return;
+            }
+
+            // Vérifier si le compte existe déjà
+            if (localStorage.getItem(newUsername)) {
+                createError.innerText = "Le nom d'utilisateur existe déjà.";
+            } else {
+                // Créer un compte sous forme d'objet avec le mot de passe et le montant
+                const accountData = {
+                    password: newPassword,
+                    balance: 0
+                };
+                localStorage.setItem(newUsername, JSON.stringify(accountData));
+                createError.innerText = "Compte créé avec succès. Vous pouvez maintenant vous connecter.";
+                document.getElementById("new-username").value = "";
+                document.getElementById("new-password").value = "";
+            }
+        }
+
+        // Fonction de connexion
+        function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const loginError = document.getElementById("login-error");
+
+            // Vérifier si le compte existe
+            const accountData = JSON.parse(localStorage.getItem(username));
+            if (accountData) {
+                // Vérifier si le mot de passe est correct
+                if (accountData.password === password) {
+                    currentUser = username;
+                    document.getElementById("current-user").innerText = username;
+                    document.getElementById("user-section").style.display = "block";
+                    document.querySelector(".login-box").style.display = "none";
+                    document.querySelector(".create-account-box").style.display = "none";
+                    loginError.innerText = "";
+
+                    // Charger le montant sauvegardé pour cet utilisateur
+                    counter = accountData.balance;
+                    updateCounter();
+                } else {
+                    loginError.innerText = "Mot de passe incorrect.";
+                }
+            } else {
+                loginError.innerText = "Le compte n'existe pas. Veuillez créer un compte.";
+            }
+        }
+
+        // Fonction de déconnexion
+        function logout() {
+            // Sauvegarder le solde avant la déconnexion
+            const accountData = JSON.parse(localStorage.getItem(currentUser));
+            accountData.balance = counter;
+            localStorage.setItem(currentUser, JSON.stringify(accountData));
+
+            currentUser = null;
+            counter = 0;
+            document.getElementById("counter").innerText = "0 €";
+            document.getElementById("user-section").style.display = "none";
+            document.querySelector(".login-box").style.display = "block";
+            document.querySelector(".create-account-box").style.display = "block";
+            document.getElementById("username").value = "";
+            document.getElementById("password").value = "";
+        }
+
+        // Ajouter un montant au compteur
+        function addAmount(amount) {
+            if (currentUser) {
+                counter += amount;
+                updateCounter();
+            }
+        }
+
+        // Mettre à jour l'affichage du compteur
+        function updateCounter() {
+            document.getElementById("counter").innerText = counter + " €";
+        }
+    </script>
 
 </body>
 </html>
