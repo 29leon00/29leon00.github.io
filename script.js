@@ -4,6 +4,7 @@ let watchID = null;
 function startSensors() {
     startCompass();
     startGeolocation();
+    startBubbleLevel();
 }
 
 // Boussole : Activer la détection de l'orientation
@@ -29,7 +30,6 @@ function startCompass() {
 function handleOrientation(event) {
     if (event.alpha !== null) {
         let compassArrow = document.getElementById('compass-arrow');
-        // Nous utilisons 360 - alpha pour orienter correctement la boussole
         let rotation = 360 - event.alpha; 
         compassArrow.style.transform = `rotate(${rotation}deg)`;
     } else {
@@ -53,8 +53,8 @@ function startGeolocation() {
 // Mettre à jour la vitesse affichée
 function updateSpeed(position) {
     const speedInMetersPerSecond = position.coords.speed || 0;
-    const speedInKmh = (speedInMetersPerSecond * 3.6).toFixed(2);  // Convertir m/s en km/h
-    const speedInKnots = (speedInMetersPerSecond * 1.943844).toFixed(2);  // Convertir m/s en nœuds
+    const speedInKmh = (speedInMetersPerSecond * 3.6).toFixed(2);
+    const speedInKnots = (speedInMetersPerSecond * 1.943844).toFixed(2);
 
     document.getElementById('speed-kmh').innerText = speedInKmh;
     document.getElementById('speed-knots').innerText = speedInKnots;
@@ -64,4 +64,24 @@ function updateSpeed(position) {
 function handleError(error) {
     console.error('Erreur de géolocalisation : ', error.message);
     alert('Impossible de récupérer la vitesse.');
+}
+
+// Niveau à Bulle : Activer la détection de l'inclinaison
+function startBubbleLevel() {
+    window.addEventListener('devicemotion', handleMotion, true);
+}
+
+// Gestion de l'inclinaison pour le niveau à bulle
+function handleMotion(event) {
+    let bubble = document.getElementById('bubble');
+    let accX = event.accelerationIncludingGravity.x;
+    let accY = event.accelerationIncludingGravity.y;
+
+    // Déplacer la bulle en fonction des valeurs d'accélération
+    let maxOffset = 60; // Limite de déplacement de la bulle
+    let bubbleX = Math.min(Math.max(-accX * 20, -maxOffset), maxOffset);
+    let bubbleY = Math.min(Math.max(accY * 20, -maxOffset), maxOffset);
+
+    bubble.style.left = `calc(50% + ${bubbleX}px - 20px)`;
+    bubble.style.top = `calc(50% + ${bubbleY}px - 20px)`;
 }
