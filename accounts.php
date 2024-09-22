@@ -1,67 +1,60 @@
 <?php
-header('Content-Type: application/json');
+$filename = 'accounts.json';
 
-// Emplacement du fichier de données des comptes
-$file_path = 'accounts.json';
-
-// Charger les comptes depuis le fichier JSON
-if (file_exists($file_path)) {
-    $accounts = json_decode(file_get_contents($file_path), true);
-} else {
-    $accounts = [];
+// Récupérer les données des comptes
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    if (file_exists($filename)) {
+        echo file_get_contents($filename);
+    } else {
+        echo json_encode([]);
+    }
 }
 
-// Vérifier le type de requête
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $action = $_POST['action'];
+// Créer ou mettre à jour un compte
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    $accounts = [];
 
-    // Créer un compte
-    if ($action == 'create') {
-        $username = $_POST['username'];
-        $password = $_POST['password'];
-
-        // Vérifier si le compte existe déjà
-        if (isset($accounts[$username])) {
-            echo json_encode(['error' => 'Le compte existe déjà.']);
-        } else {
-            // Créer un nouveau compte
-            $accounts[$username] = [
-                'password' => $password,
-                'balance' => 0
-            ];
-            file_put_contents($file_path, json_encode($accounts));
-            echo json_encode(['success' => 'Compte créé avec succès.']);
-        }
+    if (file_exists($filename)) {
+        $accounts = json_decode(file_get_contents($filename), true);
     }
 
-    // Connexion
-    elseif ($action == 'login') {
-        $username = $_POST['username'];
-        $password = $_POST['password'];
+    // Vérifier si c'est une création de compte
+    if (isset($data['action']) && $data['action'] === 'create') {
+        if (isset($accounts[$data['username']])) {
+            http_response_code(400);
+            echo json_encode(['message' => 'Le nom d\'utilisateur existe déjà.']);
+            exit;
+        }
+        $accounts[$data['username']] = [
+            'password' => $data['password'],
+            'balance' => 0
+        ];
+        file_put_contents($filename, json_encode($accounts));
+        echo json_encode(['message' => 'Compte créé avec succès.']);
+        exit;
+    }
 
-        // Vérifier si le compte existe et si le mot de passe est correct
-        if (isset($accounts[$username]) && $accounts[$username]['password'] == $password) {
-            echo json_encode(['success' => 'Connexion réussie.', 'balance' => $accounts[$username]['balance']]);
+    // Authentifier l'utilisateur
+    if (isset($data['action']) && $data['action'] === 'login') {
+        if (isset($accounts[$data['username']]) && $accounts[$data['username']]['password'] === $data['password']) {
+            echo json_encode(['balance' => $accounts[$data['username']]['balance']]);
+            exit;
         } else {
-            echo json_encode(['error' => 'Identifiant ou mot de passe incorrect.']);
+            http_response_code(400);
+            echo json_encode(['message' => 'Nom d\'utilisateur ou mot de passe incorrect.']);
+            exit;
         }
     }
 
     // Mettre à jour le solde
-    elseif ($action == 'update_balance') {
-        $username = $_POST['username'];
-        $balance = $_POST['balance'];
-
-        // Vérifier si le compte existe
-        if (isset($accounts[$username])) {
-            $accounts[$username]['balance'] = $balance;
-            file_put_contents($file_path, json_encode($accounts));
-            echo json_encode(['success' => 'Solde mis à jour.']);
-        } else {
-            echo json_encode(['error' => 'Compte non trouvé.']);
+    if (isset($data['action']) && $data['action'] === 'update') {
+        if (isset($accounts[$data['username']])) {
+            $accounts[$data['username']]['balance'] = $data['balance'];
+            file_put_contents($filename, json_encode($accounts));
+            echo json_encode(['message' => 'Solde mis à jour.']);
+            exit;
         }
     }
-} else {
-    echo json_encode(['error' => 'Requête non supportée.']);
 }
 ?>
