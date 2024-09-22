@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compteur d'Argent avec Stockage Serveur</title>
+    <title>Compteur d'Argent avec Comptes</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,13 +11,11 @@
             text-align: center;
             padding: 50px;
         }
-
         #counter {
             font-size: 3em;
             color: #1e90ff; /* Bleu */
             margin-bottom: 20px;
         }
-
         .button {
             padding: 15px 30px;
             margin: 10px;
@@ -28,53 +26,38 @@
             border-radius: 5px;
             cursor: pointer;
         }
-
-        .button:hover {
-            background-color: #4682b4; /* Bleu plus foncé */
-        }
-
         .login-box, .create-account-box {
             margin-bottom: 30px;
-            display: none;
+            display: none; /* Masqué par défaut */
         }
-
         input {
             padding: 10px;
             font-size: 1em;
             margin-right: 10px;
         }
-
         .error-message {
             color: red;
             font-size: 1em;
         }
-
         #account-button {
             position: absolute;
             top: 20px;
             right: 20px;
             font-size: 1.2em;
             padding: 10px 20px;
-            background-color: #1e90ff;
+            background-color: #1e90ff; /* Bleu */
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
-
-        #account-button:hover {
-            background-color: #4682b4;
-        }
     </style>
 </head>
 <body>
 
-    <h1>Compteur d'Argent avec Comptes et Stockage Serveur</h1>
-
-    <!-- Bouton pour afficher/masquer la gestion des comptes -->
+    <h1>Compteur d'Argent avec Comptes</h1>
     <button id="account-button" onclick="toggleAccountManagement()">Gérer le compte</button>
 
-    <!-- Formulaire de création de compte -->
     <div class="create-account-box">
         <h2>Créer un compte</h2>
         <input type="text" id="new-username" placeholder="Nom d'utilisateur">
@@ -83,7 +66,6 @@
         <div id="create-error" class="error-message"></div>
     </div>
 
-    <!-- Formulaire de connexion -->
     <div class="login-box">
         <h2>Se connecter</h2>
         <input type="text" id="username" placeholder="Nom d'utilisateur">
@@ -92,18 +74,15 @@
         <div id="login-error" class="error-message"></div>
     </div>
 
-    <!-- Section utilisateur -->
     <div id="user-section" style="display: none;">
         <h2>Utilisateur : <span id="current-user"></span></h2>
         <div id="counter">0 €</div>
-
         <button class="button" onclick="addAmount(1)">+1 €</button>
         <button class="button" onclick="addAmount(2)">+2 €</button>
         <button class="button" onclick="addAmount(5)">+5 €</button>
         <button class="button" onclick="addAmount(10)">+10 €</button>
         <button class="button" onclick="addAmount(20)">+20 €</button>
         <button class="button" onclick="addAmount(50)">+50 €</button>
-
         <button class="button" onclick="logout()" style="background-color: #ff6347;">Se déconnecter</button>
     </div>
 
@@ -111,11 +90,9 @@
         let counter = 0;
         let currentUser = null;
 
-        // Fonction pour afficher/masquer la gestion des comptes
         function toggleAccountManagement() {
             const createBox = document.querySelector('.create-account-box');
             const loginBox = document.querySelector('.login-box');
-
             if (createBox.style.display === 'none' || loginBox.style.display === 'none') {
                 createBox.style.display = 'block';
                 loginBox.style.display = 'block';
@@ -125,7 +102,6 @@
             }
         }
 
-        // Fonction pour créer un compte
         function createAccount() {
             const newUsername = document.getElementById("new-username").value;
             const newPassword = document.getElementById("new-password").value;
@@ -136,79 +112,77 @@
                 return;
             }
 
-            fetch('server.php', {
+            fetch('accounts.php', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'create',
-                    username: newUsername,
-                    password: newPassword
-                })
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ action: 'create', username: newUsername, password: newPassword })
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    createError.innerText = "Compte créé avec succès.";
-                } else {
+                if (data.message) {
                     createError.innerText = data.message;
+                    if (data.message.includes("Compte créé avec succès")) {
+                        document.getElementById("new-username").value = "";
+                        document.getElementById("new-password").value = "";
+                    }
                 }
-            });
+            })
+            .catch(err => console.error(err));
         }
 
-        // Fonction de connexion
         function login() {
             const username = document.getElementById("username").value;
             const password = document.getElementById("password").value;
             const loginError = document.getElementById("login-error");
 
-            fetch('server.php', {
+            fetch('accounts.php', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'login',
-                    username: username,
-                    password: password
-                })
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ action: 'login', username: username, password: password })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    currentUser = username;
-                    counter = data.balance;
-                    updateCounter();
-                    document.getElementById("current-user").innerText = username;
-                    document.getElementById("user-section").style.display = "block";
-                    document.querySelector(".login-box").style.display = "none";
-                    document.querySelector(".create-account-box").style.display = "none";
-                    loginError.innerText = "";
-                } else {
-                    loginError.innerText = data.message;
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Nom d'utilisateur ou mot de passe incorrect.");
                 }
-            });
-        }
-
-        // Fonction de déconnexion
-        function logout() {
-            fetch('server.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'logout',
-                    username: currentUser,
-                    balance: counter
-                })
+                return response.json();
             })
-            .then(() => {
-                currentUser = null;
-                counter = 0;
-                document.getElementById("counter").innerText = "0 €";
-                document.getElementById("user-section").style.display = "none";
-                document.querySelector(".login-box").style.display = "block";
-                document.querySelector(".create-account-box").style.display = "block";
+            .then(data => {
+                currentUser = username;
+                document.getElementById("current-user").innerText = username;
+                document.getElementById("user-section").style.display = "block";
+                document.querySelector(".login-box").style.display = "none";
+                document.querySelector(".create-account-box").style.display = "none";
+                counter = data.balance;
+                updateCounter();
+            })
+            .catch(err => {
+                loginError.innerText = err.message;
             });
         }
 
-        // Ajouter un montant au compteur
+        function logout() {
+            fetch('accounts.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ action: 'update', username: currentUser, balance: counter })
+            });
+
+            currentUser = null;
+            counter = 0;
+            document.getElementById("counter").innerText = "0 €";
+            document.getElementById("user-section").style.display = "none";
+            document.querySelector(".login-box").style.display = "block";
+            document.querySelector(".create-account-box").style.display = "block";
+            document.getElementById("username").value = "";
+            document.getElementById("password").value = "";
+        }
+
         function addAmount(amount) {
             if (currentUser) {
                 counter += amount;
@@ -216,7 +190,6 @@
             }
         }
 
-        // Mettre à jour l'affichage du compteur
         function updateCounter() {
             document.getElementById("counter").innerText = counter + " €";
         }
