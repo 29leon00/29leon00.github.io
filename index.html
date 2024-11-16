@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poulpe Géolocalisé</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        button {
+            font-size: 20px;
+            padding: 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Il y a un poulpe !</h1>
+    <button id="poulpeButton">Il y a un poulpe</button>
+
+    <script>
+        document.getElementById("poulpeButton").addEventListener("click", () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
+
+                        // Envoi des coordonnées au serveur
+                        const xhr = new XMLHttpRequest();
+                        xhr.open("POST", "save_coordinates.php", true);
+                        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                        xhr.onreadystatechange = function () {
+                            if (xhr.readyState === 4 && xhr.status === 200) {
+                                alert("Coordonnées enregistrées sur le serveur !");
+                            }
+                        };
+                        xhr.send(`latitude=${latitude}&longitude=${longitude}`);
+                    },
+                    (error) => {
+                        alert("Erreur de géolocalisation : " + error.message);
+                    }
+                );
+            } else {
+                alert("Votre navigateur ne supporte pas la géolocalisation.");
+            }
+        });
+    </script>
+</body>
+</html>
